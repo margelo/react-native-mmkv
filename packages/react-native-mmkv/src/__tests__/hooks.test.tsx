@@ -41,6 +41,20 @@ test('hooks update when the value is changed directly through the instance', () 
   expect(result.current[0]).toStrictEqual('value 2')
 })
 
+test('hooks update when the instance is cleared', () => {
+  const { result } = renderHook(() => useMMKVString('string-key', mmkv))
+
+  act(() => {
+    result.current[1]('value')
+  })
+  expect(result.current[0]).toStrictEqual('value')
+
+  act(() => {
+    mmkv.clearAll()
+  })
+  expect(result.current[0]).toBeUndefined()
+})
+
 test('functional updates to hooks', () => {
   const Component: React.FC = () => {
     const [state, setState] = React.useState(0)
