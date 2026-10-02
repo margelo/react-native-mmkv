@@ -485,6 +485,40 @@ describe('MMKV Configuration & Multiple Instances', () => {
       expect(storage2.getBoolean('key3')).toStrictEqual(true);
     });
 
+    it('should make live instances unusable after deleteMMKV()', (context) => {
+      context.skip(
+        Platform.OS === 'web',
+        'deleteMMKV does not invalidate instances on web',
+      );
+      const storage = createMMKV({ id: 'deleted-live-instance' });
+      const sameFile = createMMKV({ id: 'deleted-live-instance' });
+      const other = createMMKV({ id: 'deleted-live-instance-other' });
+      storage.set('key', 'value');
+      other.set('key', 'value');
+
+      expect(deleteMMKV('deleted-live-instance')).toStrictEqual(true);
+
+      // Every instance of the deleted file throws instead of using freed memory
+      expect(() => storage.getString('key')).toThrow();
+      expect(() => sameFile.set('key', 'value')).toThrow();
+      expect(() => other.importAllFrom(storage)).toThrow();
+      // The AppState and memory warning listeners still call these
+      expect(() => storage.checkContentChanged()).not.toThrow();
+      expect(() => storage.trim()).not.toThrow();
+      expect(storage.id).toStrictEqual('deleted-live-instance');
+      // Other files are not affected
+      expect(other.getString('key')).toStrictEqual('value');
+
+      // The id can be used again
+      const recreated = createMMKV({ id: 'deleted-live-instance' });
+      expect(recreated.getString('key')).toBeUndefined();
+      recreated.set('key', 'new');
+      expect(recreated.getString('key')).toStrictEqual('new');
+
+      recreated.clearAll();
+      other.clearAll();
+    });
+
     it('should handle instance properties correctly', () => {
       const storage = createMMKV({ id: 'properties-test' });
 

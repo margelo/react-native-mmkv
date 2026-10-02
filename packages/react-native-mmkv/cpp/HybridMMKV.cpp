@@ -13,7 +13,10 @@
 
 namespace margelo::nitro::mmkv {
 
-HybridMMKV::HybridMMKV(const Configuration& config) : HybridObject(TAG) {
+std::mutex HybridMMKV::_liveInstancesMutex;
+std::unordered_set<HybridMMKV*> HybridMMKV::_liveInstances;
+
+HybridMMKV::HybridMMKV(const Configuration& config) : HybridObject(TAG), _id(config.id), _rootPath(config.path.value_or("")) {
   MMKVMode mmkvMode = getMMKVMode(config);
   if (config.readOnly.value_or(false)) {
     mmkvMode = mmkvMode | MMKVMode::MMKV_READ_ONLY;
@@ -36,7 +39,7 @@ HybridMMKV::HybridMMKV(const Configuration& config) : HybridObject(TAG) {
   Logger::log(LogLevel::Info, TAG, "Creating MMKV instance \"%s\"... (Path: %s, Encrypted: %s)", config.id.c_str(), rootPath.c_str(),
               hasEncryptionKey ? "true" : "false");
 
-  instance = MMKV::mmkvWithID(config.id, mmkvConfig);
+  MMKV* instance = MMKV::mmkvWithID(config.id, mmkvConfig);
 
   if (instance == nullptr) [[unlikely]] {
     // Check if instanceId is invalid
@@ -65,13 +68,61 @@ HybridMMKV::HybridMMKV(const Configuration& config) : HybridObject(TAG) {
 
     throw std::runtime_error("Failed to create MMKV instance!");
   }
+
+  _instance = instance;
+  std::lock_guard lock(_liveInstancesMutex);
+  _liveInstances.insert(this);
+}
+
+HybridMMKV::~HybridMMKV() {
+  std::lock_guard lock(_liveInstancesMutex);
+  _liveInstances.erase(this);
+}
+
+void HybridMMKV::invalidateInstances(const std::string& id, const std::string& rootPath) {
+  auto resolvedRoot = [](const std::string& path) -> const std::string& { return path.empty() ? MMKV::getRootDir() : path; };
+  const std::string& root = resolvedRoot(rootPath);
+
+  std::lock_guard lock(_liveInstancesMutex);
+  // 1. Find the native instance of that file. MMKV caches one per file, so every
+  //    HybridMMKV of the file shares it (even one created with an equivalent path).
+  MMKV* deleted = nullptr;
+  for (HybridMMKV* hybrid : _liveInstances) {
+    if (hybrid->_id == id && resolvedRoot(hybrid->_rootPath) == root) {
+      deleted = hybrid->_instance.load();
+      if (deleted != nullptr) {
+        break;
+      }
+    }
+  }
+  if (deleted == nullptr) {
+    // No live instance of this file.
+    return;
+  }
+  // 2. Unlink every HybridMMKV that uses it.
+  for (HybridMMKV* hybrid : _liveInstances) {
+    MMKV* expected = deleted;
+    hybrid->_instance.compare_exchange_strong(expected, nullptr);
+  }
+}
+
+MMKV* HybridMMKV::getInstance() const {
+  MMKV* instance = _instance.load();
+  if (instance == nullptr) [[unlikely]] {
+    throw std::runtime_error("The MMKV instance \"" + _id +
+                             "\" has been deleted with `deleteMMKV(...)`! Create a new one with `createMMKV(...)`.");
+  }
+  return instance;
 }
 
 std::string HybridMMKV::getId() {
-  return instance->mmapID();
+  MMKV* instance = _instance.load();
+  // Still readable after `deleteMMKV(...)`, e.g. for logging.
+  return instance != nullptr ? instance->mmapID() : _id;
 }
 
 double HybridMMKV::getLength() {
+  MMKV* instance = getInstance();
   return instance->count();
 }
 
@@ -80,18 +131,22 @@ double HybridMMKV::getSize() {
 }
 
 double HybridMMKV::getByteSize() {
+  MMKV* instance = getInstance();
   return instance->actualSize();
 }
 
 size_t HybridMMKV::getExternalMemorySize() noexcept {
+  MMKV* instance = _instance.load();
   return instance != nullptr ? instance->actualSize() : 0;
 }
 
 bool HybridMMKV::getIsReadOnly() {
+  MMKV* instance = getInstance();
   return instance->isReadOnly();
 }
 
 bool HybridMMKV::getIsEncrypted() {
+  MMKV* instance = getInstance();
   return instance->isEncryptionEnabled();
 }
 
@@ -104,6 +159,7 @@ template <class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
 
 void HybridMMKV::set(const std::string& key, const std::variant<bool, std::shared_ptr<ArrayBuffer>, std::string, double>& value) {
+  MMKV* instance = getInstance();
   if (key.empty()) [[unlikely]] {
     throw std::runtime_error("Cannot set a value for an empty key!");
   }
@@ -136,6 +192,7 @@ void HybridMMKV::set(const std::string& key, const std::variant<bool, std::share
 }
 
 std::optional<bool> HybridMMKV::getBoolean(const std::string& key) {
+  MMKV* instance = getInstance();
   bool hasValue;
   bool result = instance->getBool(key, /* defaultValue */ false, &hasValue);
   if (hasValue) {
@@ -146,6 +203,7 @@ std::optional<bool> HybridMMKV::getBoolean(const std::string& key) {
 }
 
 std::optional<std::string> HybridMMKV::getString(const std::string& key) {
+  MMKV* instance = getInstance();
   std::string result;
   bool hasValue = instance->getString(key, result, /* inplaceModification */ true);
   if (hasValue) {
@@ -156,6 +214,7 @@ std::optional<std::string> HybridMMKV::getString(const std::string& key) {
 }
 
 std::optional<double> HybridMMKV::getNumber(const std::string& key) {
+  MMKV* instance = getInstance();
   bool hasValue;
   double result = instance->getDouble(key, /* defaultValue */ 0.0, &hasValue);
   if (hasValue) {
@@ -166,6 +225,7 @@ std::optional<double> HybridMMKV::getNumber(const std::string& key) {
 }
 
 std::optional<std::shared_ptr<ArrayBuffer>> HybridMMKV::getBuffer(const std::string& key) {
+  MMKV* instance = getInstance();
   MMBuffer result;
   bool hasValue = instance->getBytes(key, result);
   if (hasValue) {
@@ -176,10 +236,12 @@ std::optional<std::shared_ptr<ArrayBuffer>> HybridMMKV::getBuffer(const std::str
 }
 
 bool HybridMMKV::contains(const std::string& key) {
+  MMKV* instance = getInstance();
   return instance->containsKey(key);
 }
 
 bool HybridMMKV::remove(const std::string& key) {
+  MMKV* instance = getInstance();
   bool wasRemoved = instance->removeValueForKey(key);
   if (wasRemoved) {
     // Notify on changed
@@ -189,10 +251,12 @@ bool HybridMMKV::remove(const std::string& key) {
 }
 
 std::vector<std::string> HybridMMKV::getAllKeys() {
+  MMKV* instance = getInstance();
   return instance->allKeys();
 }
 
 void HybridMMKV::clearAll() {
+  MMKV* instance = getInstance();
   auto keysBefore = getAllKeys();
   instance->clearAll();
   for (const auto& key : keysBefore) {
@@ -210,6 +274,7 @@ void HybridMMKV::recrypt(const std::optional<std::string>& key) {
 }
 
 void HybridMMKV::encrypt(const std::string& key, std::optional<EncryptionType> encryptionType) {
+  MMKV* instance = getInstance();
   bool isAes256Encryption = encryptionType == EncryptionType::AES_256;
   bool successful = instance->reKey(key, isAes256Encryption);
   if (!successful) {
@@ -218,6 +283,7 @@ void HybridMMKV::encrypt(const std::string& key, std::optional<EncryptionType> e
 }
 
 void HybridMMKV::decrypt() {
+  MMKV* instance = getInstance();
   bool successful = instance->reKey("");
   if (!successful) [[unlikely]] {
     throw std::runtime_error("Failed to decrypt MMKV instance!");
@@ -225,15 +291,26 @@ void HybridMMKV::decrypt() {
 }
 
 void HybridMMKV::trim() {
+  MMKV* instance = _instance.load();
+  if (instance == nullptr) {
+    // Deleted with `deleteMMKV(...)`: nothing to trim. The memory warning listener calls this.
+    return;
+  }
   instance->trim();
   instance->clearMemoryCache();
 }
 
 void HybridMMKV::checkContentChanged() {
+  MMKV* instance = _instance.load();
+  if (instance == nullptr) {
+    // Deleted with `deleteMMKV(...)`: nothing to check. The AppState listener calls this.
+    return;
+  }
   instance->checkContentChanged();
 }
 
 Listener HybridMMKV::addOnValueChangedListener(const std::function<void(const std::string& /* key */)>& onValueChanged) {
+  MMKV* instance = getInstance();
   // Add listener
   auto mmkvID = instance->mmapID();
   auto listenerID = MMKVValueChangedListenerRegistry::addListener(mmkvID, onValueChanged);
@@ -272,12 +349,13 @@ std::optional<MMKVRecoverStrategic> HybridMMKV::getRecoveryStrategy(const Config
 }
 
 double HybridMMKV::importAllFrom(const std::shared_ptr<HybridMMKVSpec>& other) {
+  MMKV* instance = getInstance();
   auto hybridMMKV = std::dynamic_pointer_cast<HybridMMKV>(other);
   if (hybridMMKV == nullptr) [[unlikely]] {
     throw std::runtime_error("The given `MMKV` instance is not of type `HybridMMKV`!");
   }
 
-  size_t importedCount = instance->importFrom(hybridMMKV->instance);
+  size_t importedCount = instance->importFrom(hybridMMKV->getInstance());
   return static_cast<double>(importedCount);
 }
 

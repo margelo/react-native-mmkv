@@ -253,6 +253,8 @@ import { deleteMMKV } from 'react-native-mmkv'
 const wasDeleted = deleteMMKV('my-instance')
 ```
 
+Instances of a deleted storage that are still alive become unusable: using them throws. Create a new one with `createMMKV(...)`.
+
 ### Log Level
 
 By default, MMKV logs at `Debug` level in debug builds and `Warning` level in release builds. You can override this at build time to control the verbosity of MMKV's native logs.
