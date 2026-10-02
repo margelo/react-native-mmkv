@@ -10,12 +10,24 @@
 #include "Configuration.hpp"
 #include "HybridMMKVSpec.hpp"
 #include "MMKVTypes.hpp"
+#include <atomic>
+#include <mutex>
+#include <unordered_set>
 
 namespace margelo::nitro::mmkv {
 
 class HybridMMKV final : public HybridMMKVSpec {
 public:
   explicit HybridMMKV(const Configuration& configuration);
+  ~HybridMMKV() override;
+
+public:
+  /**
+   * Makes every live instance of the MMKV file `id` in `rootPath` (MMKV's root
+   * directory if empty) unusable. Call it before deleting the file:
+   * `MMKV::removeStorage(...)` destroys the native instance they all point to.
+   */
+  static void invalidateInstances(const std::string& id, const std::string& rootPath = "");
 
 public:
   // Properties
@@ -53,7 +65,18 @@ private:
   static std::optional<MMKVRecoverStrategic> getRecoveryStrategy(const Configuration& config);
 
 private:
-  MMKV* instance;
+  /**
+   * The native instance, or throws if it was deleted with `deleteMMKV(...)`.
+   */
+  MMKV* getInstance() const;
+
+private:
+  std::atomic<MMKV*> _instance;
+  std::string _id;
+  std::string _rootPath;
+
+  static std::mutex _liveInstancesMutex;
+  static std::unordered_set<HybridMMKV*> _liveInstances;
 };
 
 } // namespace margelo::nitro::mmkv
