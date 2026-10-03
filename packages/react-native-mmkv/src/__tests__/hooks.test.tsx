@@ -9,7 +9,7 @@ import {
   cleanup,
   waitFor,
 } from '@testing-library/react-native'
-import { createMMKV, useMMKVNumber, useMMKVString } from '..'
+import { createMMKV, useMMKVNumber, useMMKVString, type MMKV } from '..'
 
 const mmkv = createMMKV()
 
@@ -113,6 +113,40 @@ test('useMMKV hook does not miss updates that happen during subscription setup',
   await waitFor(() => {
     expect(result.current[0]).toBe('updated-before-subscribe')
   })
+})
+
+test('hooks read the new value when the key changes', () => {
+  mmkv.set('key-a', 'value a')
+  mmkv.set('key-b', 'value b')
+
+  const { result, rerender } = renderHook(
+    ({ key }: { key: string }) => useMMKVString(key, mmkv),
+    { initialProps: { key: 'key-a' } }
+  )
+
+  expect(result.current[0]).toStrictEqual('value a')
+
+  rerender({ key: 'key-b' })
+
+  expect(result.current[0]).toStrictEqual('value b')
+})
+
+test('hooks read the new value when the instance changes', () => {
+  const otherMMKV = createMMKV({ id: 'other-instance' })
+  otherMMKV.clearAll()
+  mmkv.set('shared-key', 'from default')
+  otherMMKV.set('shared-key', 'from other')
+
+  const { result, rerender } = renderHook(
+    ({ instance }: { instance: MMKV }) => useMMKVString('shared-key', instance),
+    { initialProps: { instance: mmkv } }
+  )
+
+  expect(result.current[0]).toStrictEqual('from default')
+
+  rerender({ instance: otherMMKV })
+
+  expect(result.current[0]).toStrictEqual('from other')
 })
 
 test('useMMKV hook stays consistent during rapid updates', async () => {

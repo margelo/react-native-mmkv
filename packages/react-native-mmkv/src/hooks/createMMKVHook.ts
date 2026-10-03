@@ -1,4 +1,4 @@
-import { useCallback, useSyncExternalStore } from 'react'
+import { useCallback, useRef, useSyncExternalStore } from 'react'
 import { getDefaultMMKVInstance } from '../createMMKV/getDefaultMMKVInstance'
 import type { MMKV } from '../specs/MMKV.nitro'
 
@@ -13,20 +13,39 @@ export function createMMKVHook<
   ): [value: T, setValue: (value: TSetAction) => void] => {
     const mmkv = instance ?? getDefaultMMKVInstance()
 
+    const cachedInstance = useRef<MMKV | undefined>(undefined)
+    const cachedKey = useRef<string | undefined>(undefined)
+    const cachedValue = useRef<T | undefined>(undefined)
+    if (cachedInstance.current !== mmkv || cachedKey.current !== key) {
+      // Initialize or update `cachedValue` when React props change.
+      cachedInstance.current = mmkv
+      cachedKey.current = key
+      cachedValue.current = getter(mmkv, key)
+    }
+
+    const getSnapshot = useCallback(() => cachedValue.current as T, [])
     const value = useSyncExternalStore(
       useCallback(
         (onStoreChange: () => void) => {
           const listener = mmkv.addOnValueChangedListener((changedKey) => {
             if (changedKey === key) {
+              // `getBuffer(..)` returns a new ArrayBuffer every time - only read on change
+              cachedValue.current = getter(mmkv, key)
               onStoreChange()
             }
           })
+          // The value might have changed between render and subscribe
+          const latestValue = getter(mmkv, key)
+          if (latestValue !== cachedValue.current) {
+            cachedValue.current = latestValue
+            onStoreChange()
+          }
           return () => listener.remove()
         },
         [key, mmkv]
       ),
-      useCallback(() => getter(mmkv, key), [key, mmkv]),
-      useCallback(() => getter(mmkv, key), [key, mmkv])
+      getSnapshot,
+      getSnapshot
     )
 
     // update value by user set
