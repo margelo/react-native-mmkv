@@ -83,7 +83,7 @@ export default function App() {
 
   useEffect(() => {
     if (!hasMigratedFromAsyncStorage) {
-      InteractionManager.runAfterInteractions(async () => {
+      requestIdleCallback(async () => {
         try {
           await migrateFromAsyncStorage()
           setHasMigrated(true)
