@@ -64,11 +64,13 @@
     "@testing-library/react-native": "^13.3.1",
     "@types/jest": "^29.5.14",
     "@types/react": "^19.2.15",
+    "@types/react-dom": "19.2.7",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
     "nitrogen": "0.35.9",
     "prettier": "^3.8.3",
     "react": "19.2.6",
+    "react-dom": "19.2.6",
     "react-native": "0.85.3",
     "react-native-nitro-modules": "0.35.9",
     "typescript": "^6.0.3"

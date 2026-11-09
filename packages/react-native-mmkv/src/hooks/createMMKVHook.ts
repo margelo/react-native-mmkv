@@ -2,6 +2,8 @@ import { useCallback, useSyncExternalStore } from 'react'
 import { getDefaultMMKVInstance } from '../createMMKV/getDefaultMMKVInstance'
 import type { MMKV } from '../specs/MMKV.nitro'
 
+const getServerSnapshot = () => undefined
+
 export function createMMKVHook<
   T extends (boolean | number | string | ArrayBufferLike) | undefined,
   TSet extends T | undefined,
@@ -26,7 +28,11 @@ export function createMMKVHook<
         [key, mmkv]
       ),
       useCallback(() => getter(mmkv, key), [key, mmkv]),
-      useCallback(() => getter(mmkv, key), [key, mmkv])
+      // There's no storage on the server, so a value is unset there, and while
+      // the browser hydrates the server's HTML. React only calls this then, so
+      // it never runs on native. Every getter returns `undefined` for an unset
+      // value, so `T` always includes it.
+      getServerSnapshot as () => T
     )
 
     // update value by user set
