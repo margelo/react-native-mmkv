@@ -65,11 +65,13 @@
         "@testing-library/react-native": "^13.3.1",
         "@types/jest": "^29.5.14",
         "@types/react": "^19.2.15",
+        "@types/react-dom": "19.2.7",
         "eslint": "^8.57.1",
         "eslint-config-prettier": "^10.1.8",
         "nitrogen": "0.35.9",
         "prettier": "^3.8.3",
         "react": "19.2.6",
+        "react-dom": "19.2.6",
         "react-native": "0.85.3",
         "react-native-nitro-modules": "0.35.9",
         "typescript": "^6.0.3",
@@ -828,6 +830,8 @@
     "@types/parse-path": ["@types/parse-path@7.1.0", "", { "dependencies": { "parse-path": "*" } }, "sha512-EULJ8LApcVEPbrfND0cRQqutIOdiIgJ1Mgrhpy755r14xMohPTEpkV/k28SJvuOs9bHRFW8x+KeDAEPiGQPB9Q=="],
 
     "@types/react": ["@types/react@19.2.15", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-eRwcGNHve+E8qtEQSSRl6urh+rFop4v8gm6O8rGv25CodbvFdLjA1vVQ1KkiFE0w0UPOnb8tDiFKL5lp0rtY5Q=="],
+
+    "@types/react-dom": ["@types/react-dom@19.2.7", "", { "peerDependencies": { "@types/react": "^19.2.0" } }, "sha512-I8bPpDLcHBv1qiIiXDCy71Rt8eQDKJP0sMSWJphDdAcdqiJ1sGpZamavoEIRZmYzjia9LuEb2HlYdDpmoENpvQ=="],
 
     "@types/react-test-renderer": ["@types/react-test-renderer@19.1.0", "", { "dependencies": { "@types/react": "*" } }, "sha512-XD0WZrHqjNrxA/MaR9O22w/RNidWR9YZmBdRGI7wcnWGrv/3dA8wKCJ8m63Sn+tLJhcjmuhOi629N66W6kgWzQ=="],
 

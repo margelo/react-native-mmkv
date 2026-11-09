@@ -9,6 +9,7 @@ import {
   cleanup,
   waitFor,
 } from '@testing-library/react-native'
+import { renderToString } from 'react-dom/server'
 import { createMMKV, useMMKVNumber, useMMKVString } from '..'
 
 const mmkv = createMMKV()
@@ -128,4 +129,17 @@ test('useMMKV hook stays consistent during rapid updates', async () => {
   await waitFor(() => {
     expect(result.current[0]).toBe(100)
   })
+})
+
+test('hooks read as unset when rendered on the server', () => {
+  // There's no storage on the server (on Web, reading it there throws), so a
+  // server render reads every value as unset, even one that's stored.
+  mmkv.set('string-key', 'stored value')
+
+  const Component: React.FC = () => {
+    const [value] = useMMKVString('string-key', mmkv)
+    return <>{value ?? 'unset'}</>
+  }
+
+  expect(renderToString(<Component />)).toBe('unset')
 })
