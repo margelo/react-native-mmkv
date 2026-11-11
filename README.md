@@ -101,6 +101,19 @@ This creates a new storage instance using the default MMKV storage ID (`mmkv.def
 If you want to share MMKV data between your app and other apps or app extensions in the same group, open `Info.plist` and create an `AppGroupIdentifier` key with your app group's value. MMKV will then automatically store data inside the app group which can be read and written to from other apps or app extensions in the same group by making use of MMKV's multi processing mode.
 See [Configuring App Groups](https://developer.apple.com/documentation/xcode/configuring-app-groups).
 
+> [!NOTE]
+> If you don't pass a `path`, react-native-mmkv stores App Group instances in the root of the App Group container. Native MMKV's `MMKV.initialize(rootDir:groupDir:)` (and react-native-mmkv V2) use a `mmkv` subdirectory instead (`<container>/mmkv`), so an extension set up that way opens a different file and won't see your app's data.
+
+To open the same instance from a native extension, pass the container directory as the `rootPath`, and use the same `id` and `mode: 'multi-process'` in JS:
+
+```swift
+let groupDir = FileManager.default
+  .containerURL(forSecurityApplicationGroupIdentifier: "group.com.example.app")!
+  .path
+MMKV.initialize(rootDir: nil)
+let storage = MMKV(mmapID: "mmkv.default", cryptKey: nil, rootPath: groupDir, mode: .multiProcess, expectedCapacity: 0)
+```
+
 #### Customize
 
 ```ts
