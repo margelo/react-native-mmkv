@@ -27,6 +27,9 @@ std::shared_ptr<HybridMMKVSpec> HybridMMKVFactory::createMMKV(const Configuratio
 }
 
 bool HybridMMKVFactory::deleteMMKV(const std::string& id) {
+  // MMKV destroys the file's native instance: instances still alive in JS
+  // must not keep pointing to it.
+  HybridMMKV::invalidateInstances(id);
   return MMKV::removeStorage(id);
 }
 
