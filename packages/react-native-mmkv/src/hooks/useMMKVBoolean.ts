@@ -10,6 +10,7 @@ import { createMMKVHook } from './createMMKVHook'
  * const [isPremiumAccount, setIsPremiumAccount] = useMMKVBoolean("user.isPremium")
  * ```
  */
-export const useMMKVBoolean = createMMKVHook((instance, key) =>
-  instance.getBoolean(key)
+export const useMMKVBoolean = createMMKVHook(
+  (instance, key) => instance.getBoolean(key),
+  (instance, key, value) => instance.setBoolean(key, value)
 )

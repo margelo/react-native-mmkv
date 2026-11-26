@@ -23,7 +23,7 @@ namespace margelo::nitro::mmkv {
    */
   struct Configuration final {
   public:
-    std::string id     SWIFT_PRIVATE;
+    std::optional<std::string> id     SWIFT_PRIVATE;
     std::optional<std::string> path     SWIFT_PRIVATE;
     std::optional<std::string> encryptionKey     SWIFT_PRIVATE;
     std::optional<EncryptionType> encryptionType     SWIFT_PRIVATE;
@@ -33,7 +33,7 @@ namespace margelo::nitro::mmkv {
     std::optional<RecoveryStrategy> recoveryStrategy     SWIFT_PRIVATE;
 
   public:
-    explicit Configuration(std::string id, std::optional<std::string> path, std::optional<std::string> encryptionKey, std::optional<EncryptionType> encryptionType, std::optional<Mode> mode, std::optional<bool> readOnly, std::optional<bool> compareBeforeSet, std::optional<RecoveryStrategy> recoveryStrategy): id(std::move(id)), path(std::move(path)), encryptionKey(std::move(encryptionKey)), encryptionType(std::move(encryptionType)), mode(std::move(mode)), readOnly(std::move(readOnly)), compareBeforeSet(std::move(compareBeforeSet)), recoveryStrategy(std::move(recoveryStrategy)) {}
+    explicit Configuration(std::optional<std::string> id, std::optional<std::string> path, std::optional<std::string> encryptionKey, std::optional<EncryptionType> encryptionType, std::optional<Mode> mode, std::optional<bool> readOnly, std::optional<bool> compareBeforeSet, std::optional<RecoveryStrategy> recoveryStrategy): id(std::move(id)), path(std::move(path)), encryptionKey(std::move(encryptionKey)), encryptionType(std::move(encryptionType)), mode(std::move(mode)), readOnly(std::move(readOnly)), compareBeforeSet(std::move(compareBeforeSet)), recoveryStrategy(std::move(recoveryStrategy)) {}
 
   public:
     friend bool operator==(const Configuration& lhs, const Configuration& rhs) = default;

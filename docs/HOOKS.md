@@ -8,6 +8,7 @@ react-native-mmkv provides an easy to use React-Hooks API to be used in Function
 function App() {
   const [username, setUsername] = useMMKVString("user.name")
   const [age, setAge] = useMMKVNumber("user.age")
+  const [timestamp, setTimestamp] = useMMKVBigInt("timestamp")
   const [isPremiumUser, setIsPremiumUser] = useMMKVBoolean("user.isPremium")
   const [privateKey, setPrivateKey] = useMMKVBuffer("user.privateKey")
 }
@@ -46,7 +47,7 @@ function App() {
   const storage = useMMKV()
   // ...
   const onLogin = useCallback((username) => {
-    storage.set("user.name", "Marc")
+    storage.setString("user.name", "Marc")
   }, [storage])
 }
 ```

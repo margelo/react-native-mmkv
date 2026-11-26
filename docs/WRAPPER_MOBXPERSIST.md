@@ -4,9 +4,9 @@ If you want to use MMKV with [mobx-persist](https://github.com/pinqy520/mobx-per
 
 ```ts
 import { create } from "mobx-persist"
-import { createMMKV } from "react-native-mmkv"
+import { MMKV } from "react-native-mmkv"
 
-const storage = createMMKV()
+const storage = new MMKV()
 
 const mmkvStorage = {
   clear: () => {
@@ -14,7 +14,7 @@ const mmkvStorage = {
     return Promise.resolve()
   },
   setItem: (key, value) => {
-    storage.set(key, value)
+    storage.setString(key, value)
     return Promise.resolve(true)
   },
   getItem: (key) => {

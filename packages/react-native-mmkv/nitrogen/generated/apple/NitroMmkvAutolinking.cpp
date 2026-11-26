@@ -9,7 +9,6 @@
 #include <NitroModules/HybridClassRegistry.hpp>
 
 #include <NitroMmkv/HybridMMKVSpec.hpp>
-#include <NitroMmkv/HybridMMKVFactorySpec.hpp>
 #include <NitroMmkv/private/HybridMMKVPlatformContextSpecSwift.hpp>
 
 namespace margelo::nitro::mmkv {
@@ -18,7 +17,6 @@ namespace margelo::nitro::mmkv {
     using namespace margelo::nitro::mmkv;
 
     HybridClassRegistry::registerHybridClass("mmkv.MMKV", HybridMMKVSpec::Class::get());
-    HybridClassRegistry::registerHybridClass("mmkv.MMKVFactory", HybridMMKVFactorySpec::Class::get());
     HybridClassRegistry::registerHybridClass("mmkv.MMKVPlatformContext", HybridMMKVPlatformContextSpecSwift::Class::get());
   }
 } // namespace margelo::nitro::mmkv

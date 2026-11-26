@@ -13,11 +13,11 @@ target_include_directories(NitroMmkv PRIVATE
 )
 target_sources(NitroMmkv PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/NitroMmkvOnLoad.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/../android/c++/HybridMMKVFactorySpecClass.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/../android/c++/HybridMMKVPlatformContextSpecCxx+JNI.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/../android/c++/HybridMMKVPlatformContextSpecCxx.android.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../android/c++/HybridMMKVSpecClass.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../android/c++/JHybridMMKVPlatformContextSpec.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../shared/c++/Configuration.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/../shared/c++/HybridMMKVFactorySpec.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../shared/c++/HybridMMKVSpec.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../shared/c++/Listener.cpp"
 )

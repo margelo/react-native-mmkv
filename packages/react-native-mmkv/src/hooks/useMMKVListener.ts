@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import type { MMKV } from '../specs/MMKV.nitro'
-import { getDefaultMMKVInstance } from '../createMMKV/getDefaultMMKVInstance'
+import { getDefaultMMKVInstance } from '../getDefaultMMKVInstance'
 
 /**
  * Listen for changes in the given MMKV storage instance.

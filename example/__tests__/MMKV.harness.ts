@@ -5,8 +5,8 @@ import {
   beforeEach,
   afterEach,
 } from 'react-native-harness';
-import { Platform } from 'react-native';
-import { MMKV, createMMKV, deleteMMKV, existsMMKV } from 'react-native-mmkv';
+import { DeviceEventEmitter, Platform } from 'react-native';
+import { MMKV } from 'react-native-mmkv';
 
 const waitForNextTick = async () => {
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -16,7 +16,7 @@ describe('MMKV Core Functionality', () => {
   let storage: MMKV;
 
   beforeEach(() => {
-    storage = createMMKV();
+    storage = new MMKV();
     storage.clearAll(); // Start with clean state
   });
 
@@ -29,7 +29,7 @@ describe('MMKV Core Functionality', () => {
       const testKey = 'testString';
       const testValue = 'Hello MMKV!';
 
-      storage.set(testKey, testValue);
+      storage.setString(testKey, testValue);
 
       expect(storage.getString(testKey)).toStrictEqual(testValue);
       expect(storage.contains(testKey)).toBe(true);
@@ -40,26 +40,43 @@ describe('MMKV Core Functionality', () => {
       const testKey = 'testNumber';
       const testValue = 42.5;
 
-      storage.set(testKey, testValue);
+      storage.setNumber(testKey, testValue);
 
       expect(storage.getNumber(testKey)).toStrictEqual(testValue);
       expect(storage.contains(testKey)).toBe(true);
     });
 
+    it('should round-trip the signed 64-bit integer range', () => {
+      const min = -(2n ** 63n);
+      const max = 2n ** 63n - 1n;
+      expect(storage).toBeInstanceOf(MMKV);
+      expect(storage.constructor).toBe(MMKV);
+      expect(storage.getBigInt('bigint')).toBeUndefined();
+
+      storage.setBigInt('bigint', min);
+      expect(new MMKV().getBigInt('bigint')).toBe(min);
+
+      storage.setBigInt('bigint', max);
+      expect(storage.getBigInt('bigint')).toBe(max);
+      expect(() => storage.setBigInt('bigint', min - 1n)).toThrow();
+      expect(() => storage.setBigInt('bigint', max + 1n)).toThrow();
+      expect(storage.getBigInt('bigint')).toBe(max);
+    });
+
     it('should store and retrieve boolean values correctly', () => {
       const testKey = 'testBoolean';
 
-      storage.set(testKey, true);
+      storage.setBoolean(testKey, true);
       expect(storage.getBoolean(testKey)).toStrictEqual(true);
 
-      storage.set(testKey, false);
+      storage.setBoolean(testKey, false);
       expect(storage.getBoolean(testKey)).toStrictEqual(false);
     });
 
     it('should store and retrieve values with correct types', () => {
-      storage.set('stringKey', 'value');
-      storage.set('numberKey', 123);
-      storage.set('booleanKey', true);
+      storage.setString('stringKey', 'value');
+      storage.setNumber('numberKey', 123);
+      storage.setBoolean('booleanKey', true);
 
       // Correct type access should work
       expect(storage.getString('stringKey')).toStrictEqual('value');
@@ -70,7 +87,7 @@ describe('MMKV Core Functionality', () => {
     it('should handle type interpretation from raw bytes', () => {
       // MMKV stores raw bytes, so reading with wrong type may return interpreted values
       // rather than undefined, depending on the underlying byte representation
-      storage.set('numberKey', 42);
+      storage.setNumber('numberKey', 42);
 
       // Reading a number as string/boolean may return some interpreted value
       // We just verify it doesn't crash and returns something
@@ -88,7 +105,7 @@ describe('MMKV Core Functionality', () => {
     it('should remove values correctly', () => {
       const testKey = 'removeTest';
 
-      storage.set(testKey, 'value');
+      storage.setString(testKey, 'value');
       expect(storage.contains(testKey)).toBe(true);
 
       storage.remove(testKey);
@@ -98,9 +115,9 @@ describe('MMKV Core Functionality', () => {
     });
 
     it('should clear all values correctly', () => {
-      storage.set('key1', 'value1');
-      storage.set('key2', 42);
-      storage.set('key3', true);
+      storage.setString('key1', 'value1');
+      storage.setNumber('key2', 42);
+      storage.setBoolean('key3', true);
 
       expect(storage.getAllKeys().length).toBeGreaterThan(0);
 
@@ -114,7 +131,7 @@ describe('MMKV Core Functionality', () => {
       expect(storage.getString(nonExistentKey)).toBeUndefined();
       expect(storage.getNumber(nonExistentKey)).toBeUndefined();
       expect(storage.getBoolean(nonExistentKey)).toBeUndefined();
-      expect(storage.getBuffer(nonExistentKey)).toBeUndefined();
+      expect(storage.getArrayBuffer(nonExistentKey)).toBeUndefined();
       expect(storage.contains(nonExistentKey)).toBe(false);
     });
   });
@@ -124,7 +141,7 @@ describe('MMKV Core Functionality', () => {
       const keys = ['key1', 'key2', 'key3'];
 
       keys.forEach((key, index) => {
-        storage.set(key, `value${index}`);
+        storage.setString(key, `value${index}`);
       });
 
       const retrievedKeys = storage.getAllKeys();
@@ -144,7 +161,7 @@ describe('MMKV Core Functionality', () => {
       ];
 
       specialKeys.forEach((key) => {
-        storage.set(key, 'test value');
+        storage.setString(key, 'test value');
         expect(storage.getString(key)).toStrictEqual('test value');
         expect(storage.contains(key)).toBe(true);
       });
@@ -155,23 +172,23 @@ describe('MMKV Core Functionality', () => {
     it('should overwrite existing values', () => {
       const key = 'overwriteTest';
 
-      storage.set(key, 'original');
+      storage.setString(key, 'original');
       expect(storage.getString(key)).toStrictEqual('original');
 
-      storage.set(key, 'updated');
+      storage.setString(key, 'updated');
       expect(storage.getString(key)).toStrictEqual('updated');
     });
 
     it('should handle type changes for the same key', () => {
       const key = 'typeChangeTest';
 
-      storage.set(key, 'string value');
+      storage.setString(key, 'string value');
       expect(storage.getString(key)).toStrictEqual('string value');
 
-      storage.set(key, 42);
+      storage.setNumber(key, 42);
       expect(storage.getNumber(key)).toStrictEqual(42);
 
-      storage.set(key, true);
+      storage.setBoolean(key, true);
       expect(storage.getBoolean(key)).toStrictEqual(true);
     });
   });
@@ -179,15 +196,15 @@ describe('MMKV Core Functionality', () => {
   describe('Edge Cases', () => {
     it('should handle empty string values', () => {
       const key = 'emptyString';
-      storage.set(key, '');
+      storage.setString(key, '');
 
       expect(storage.getString(key)).toStrictEqual('');
       expect(storage.contains(key)).toBe(true);
     });
 
     it('should handle zero and negative numbers', () => {
-      storage.set('zero', 0);
-      storage.set('negative', -42.5);
+      storage.setNumber('zero', 0);
+      storage.setNumber('negative', -42.5);
 
       expect(storage.getNumber('zero')).toStrictEqual(0);
       expect(storage.getNumber('negative')).toStrictEqual(-42.5);
@@ -197,7 +214,7 @@ describe('MMKV Core Functionality', () => {
       const longString = 'A'.repeat(10000);
       const key = 'longString';
 
-      storage.set(key, longString);
+      storage.setString(key, longString);
       expect(storage.getString(key)).toStrictEqual(longString);
     });
 
@@ -208,7 +225,7 @@ describe('MMKV Core Functionality', () => {
       for (let i = 0; i < keyCount; i++) {
         const key = `key${i}`;
         keys.push(key);
-        storage.set(key, i);
+        storage.setNumber(key, i);
       }
 
       // Verify all keys exist
@@ -234,9 +251,9 @@ describe('MMKV Core Functionality', () => {
       const data = new Uint8Array([1, 2, 3, 4, 5, 255]);
       const buffer = data.buffer;
 
-      storage.set(key, buffer);
+      storage.setArrayBuffer(key, buffer);
 
-      const retrieved = storage.getBuffer(key);
+      const retrieved = storage.getArrayBuffer(key);
       expect(retrieved).toBeDefined();
       expect(retrieved!.byteLength).toStrictEqual(buffer.byteLength);
 
@@ -252,9 +269,9 @@ describe('MMKV Core Functionality', () => {
       const key = 'emptyBuffer';
       const emptyBuffer = new ArrayBuffer(0);
 
-      storage.set(key, emptyBuffer);
+      storage.setArrayBuffer(key, emptyBuffer);
 
-      const retrieved = storage.getBuffer(key);
+      const retrieved = storage.getArrayBuffer(key);
       expect(retrieved).toBeDefined();
       expect(retrieved!.byteLength).toStrictEqual(0);
     });
@@ -273,9 +290,9 @@ describe('MMKV Core Functionality', () => {
         data[i] = i % 256;
       }
 
-      storage.set(key, data.buffer);
+      storage.setArrayBuffer(key, data.buffer);
 
-      const retrieved = storage.getBuffer(key);
+      const retrieved = storage.getArrayBuffer(key);
       expect(retrieved).toBeDefined();
       expect(retrieved!.byteLength).toStrictEqual(size);
 
@@ -296,13 +313,17 @@ describe('MMKV Core Functionality', () => {
       const float32Data = new Float32Array([3.14159, -2.718, 1.414]);
       const uint32Data = new Uint32Array([0, 1, 4294967295]);
 
-      storage.set('int16', int16Data.buffer);
-      storage.set('float32', float32Data.buffer);
-      storage.set('uint32', uint32Data.buffer);
+      storage.setArrayBuffer('int16', int16Data.buffer);
+      storage.setArrayBuffer('float32', float32Data.buffer);
+      storage.setArrayBuffer('uint32', uint32Data.buffer);
 
-      const int16Retrieved = new Int16Array(storage.getBuffer('int16')!);
-      const float32Retrieved = new Float32Array(storage.getBuffer('float32')!);
-      const uint32Retrieved = new Uint32Array(storage.getBuffer('uint32')!);
+      const int16Retrieved = new Int16Array(storage.getArrayBuffer('int16')!);
+      const float32Retrieved = new Float32Array(
+        storage.getArrayBuffer('float32')!,
+      );
+      const uint32Retrieved = new Uint32Array(
+        storage.getArrayBuffer('uint32')!,
+      );
 
       expect(int16Retrieved).toEqual(int16Data);
       expect(float32Retrieved).toEqual(float32Data);
@@ -317,10 +338,10 @@ describe('MMKV Core Functionality', () => {
       const key = 'bufferTypeTest';
       const data = new Uint8Array([65, 66, 67]); // 'ABC' in ASCII
 
-      storage.set(key, data.buffer);
+      storage.setArrayBuffer(key, data.buffer);
 
       // Buffer should be retrievable as buffer
-      expect(storage.getBuffer(key)).toBeDefined();
+      expect(storage.getArrayBuffer(key)).toBeDefined();
 
       // Other types may return interpreted values from the raw bytes
       // We just verify they don't crash
@@ -340,9 +361,9 @@ describe('MMKV Configuration & Multiple Instances', () => {
   afterEach(() => {
     // Clean up all test instances
     try {
-      createMMKV({ id: 'test-instance-1' }).clearAll();
-      createMMKV({ id: 'test-instance-2' }).clearAll();
-      createMMKV({ id: 'encrypted-instance' }).clearAll();
+      new MMKV({ id: 'test-instance-1' }).clearAll();
+      new MMKV({ id: 'test-instance-2' }).clearAll();
+      new MMKV({ id: 'encrypted-instance' }).clearAll();
     } catch {
       // Instances might not exist, that's okay
     }
@@ -350,12 +371,12 @@ describe('MMKV Configuration & Multiple Instances', () => {
 
   describe('Instance Configuration', () => {
     it('should create instances with different IDs', () => {
-      const storage1 = createMMKV({ id: 'test-instance-1' });
-      const storage2 = createMMKV({ id: 'test-instance-2' });
+      const storage1 = new MMKV({ id: 'test-instance-1' });
+      const storage2 = new MMKV({ id: 'test-instance-2' });
 
       // Set values in different instances
-      storage1.set('shared-key', 'value-from-instance-1');
-      storage2.set('shared-key', 'value-from-instance-2');
+      storage1.setString('shared-key', 'value-from-instance-1');
+      storage2.setString('shared-key', 'value-from-instance-2');
 
       // Values should be isolated
       expect(storage1.getString('shared-key')).toStrictEqual(
@@ -367,12 +388,12 @@ describe('MMKV Configuration & Multiple Instances', () => {
     });
 
     it('should handle default instance vs custom instance isolation', () => {
-      const defaultStorage = createMMKV();
-      const customStorage = createMMKV({ id: 'custom-test' });
+      const defaultStorage = new MMKV();
+      const customStorage = new MMKV({ id: 'custom-test' });
 
       const key = 'isolation-test';
-      defaultStorage.set(key, 'default-value');
-      customStorage.set(key, 'custom-value');
+      defaultStorage.setString(key, 'default-value');
+      customStorage.setString(key, 'custom-value');
 
       expect(defaultStorage.getString(key)).toStrictEqual('default-value');
       expect(customStorage.getString(key)).toStrictEqual('custom-value');
@@ -383,10 +404,10 @@ describe('MMKV Configuration & Multiple Instances', () => {
 
     it('should reuse same instance for same configuration', () => {
       const config = { id: 'reuse-test' };
-      const storage1 = createMMKV(config);
-      const storage2 = createMMKV(config);
+      const storage1 = new MMKV(config);
+      const storage2 = new MMKV(config);
 
-      storage1.set('test-key', 'test-value');
+      storage1.setString('test-key', 'test-value');
 
       // Both references should point to same instance
       expect(storage2.getString('test-key')).toStrictEqual('test-value');
@@ -396,35 +417,35 @@ describe('MMKV Configuration & Multiple Instances', () => {
     });
 
     it('should create instance with discard-on-error recovery strategy', () => {
-      const storage = createMMKV({
+      const storage = new MMKV({
         id: 'recovery-discard-test',
         recoveryStrategy: 'discard-on-error',
       });
 
-      storage.set('key', 'value');
+      storage.setString('key', 'value');
       expect(storage.getString('key')).toStrictEqual('value');
 
       storage.clearAll();
     });
 
     it('should create instance with recover-on-error recovery strategy', () => {
-      const storage = createMMKV({
+      const storage = new MMKV({
         id: 'recovery-recover-test',
         recoveryStrategy: 'recover-on-error',
       });
 
-      storage.set('key', 'value');
+      storage.setString('key', 'value');
       expect(storage.getString('key')).toStrictEqual('value');
 
       storage.clearAll();
     });
 
     it('should check for external content changes', () => {
-      const storage = createMMKV({ id: 'content-change-check-test' });
+      const storage = new MMKV({ id: 'content-change-check-test' });
 
       storage.checkContentChanged();
 
-      storage.set('content-change-check', 'value');
+      storage.setString('content-change-check', 'value');
       expect(storage.getString('content-change-check')).toStrictEqual('value');
 
       storage.clearAll();
@@ -433,14 +454,15 @@ describe('MMKV Configuration & Multiple Instances', () => {
 
   describe('Instance Management', () => {
     it('should handle multiple instances independently', () => {
-      const instances = Array.from({ length: 5 }, (_, i) =>
-        createMMKV({ id: `multi-instance-${i}` }),
+      const instances = Array.from(
+        { length: 5 },
+        (_, i) => new MMKV({ id: `multi-instance-${i}` }),
       );
 
       // Set different values in each instance
       instances.forEach((instance, i) => {
-        instance.set('instance-number', i);
-        instance.set('instance-name', `instance-${i}`);
+        instance.setNumber('instance-number', i);
+        instance.setString('instance-name', `instance-${i}`);
       });
 
       // Verify isolation
@@ -460,17 +482,17 @@ describe('MMKV Configuration & Multiple Instances', () => {
         Platform.OS === 'web',
         'importAllFrom semantics are not supported on web',
       );
-      const storage1 = createMMKV({ id: 'first-storage' });
-      const storage2 = createMMKV({ id: 'second-storage' });
+      const storage1 = new MMKV({ id: 'first-storage' });
+      const storage2 = new MMKV({ id: 'second-storage' });
       storage1.clearAll();
       storage2.clearAll();
 
       expect(storage1.getAllKeys()).toEqual([]);
       expect(storage2.getAllKeys()).toEqual([]);
 
-      storage1.set('key1', 'value1');
-      storage1.set('key2', 42);
-      storage1.set('key3', true);
+      storage1.setString('key1', 'value1');
+      storage1.setNumber('key2', 42);
+      storage1.setBoolean('key3', true);
 
       expect(storage1.getAllKeys().length).toStrictEqual(3);
       expect(storage2.getAllKeys().length).toStrictEqual(0);
@@ -486,14 +508,14 @@ describe('MMKV Configuration & Multiple Instances', () => {
     });
 
     it('should handle instance properties correctly', () => {
-      const storage = createMMKV({ id: 'properties-test' });
+      const storage = new MMKV({ id: 'properties-test' });
 
       // Initially empty
       expect(storage.getAllKeys()).toEqual([]);
 
       // Add some data
-      storage.set('key1', 'value1');
-      storage.set('key2', 42);
+      storage.setString('key1', 'value1');
+      storage.setNumber('key2', 42);
 
       expect(typeof storage.length).toBe('number');
       expect(storage.length).toStrictEqual(2);
@@ -509,10 +531,10 @@ describe('MMKV Encryption & Security', () => {
   afterEach(() => {
     // Clean up encrypted instances
     try {
-      createMMKV({ id: 'encrypted-test-128' }).clearAll();
-      createMMKV({ id: 'recrypt-test-128' }).clearAll();
-      createMMKV({ id: 'encrypted-test-256' }).clearAll();
-      createMMKV({ id: 'recrypt-test-256' }).clearAll();
+      new MMKV({ id: 'encrypted-test-128' }).clearAll();
+      new MMKV({ id: 'recrypt-test-128' }).clearAll();
+      new MMKV({ id: 'encrypted-test-256' }).clearAll();
+      new MMKV({ id: 'recrypt-test-256' }).clearAll();
     } catch {
       // Instances might not exist, that's okay
     }
@@ -522,14 +544,14 @@ describe('MMKV Encryption & Security', () => {
     it('should create encrypted instance and store data', (context) => {
       context.skip(Platform.OS === 'web', 'encryption is not supported on Web');
       const encryptionKey = 'test-key-123456';
-      const storage = createMMKV({
+      const storage = new MMKV({
         id: 'encrypted-test-128',
         encryptionKey,
       });
 
-      storage.set('secret-data', 'confidential information');
-      storage.set('secret-number', 42);
-      storage.set('secret-boolean', true);
+      storage.setString('secret-data', 'confidential information');
+      storage.setNumber('secret-number', 42);
+      storage.setBoolean('secret-boolean', true);
 
       expect(storage.getString('secret-data')).toStrictEqual(
         'confidential information',
@@ -540,15 +562,15 @@ describe('MMKV Encryption & Security', () => {
 
     it('should isolate encrypted and non-encrypted instances', (context) => {
       context.skip(Platform.OS === 'web', 'encryption is not supported on Web');
-      const plainStorage = createMMKV({ id: 'plain-test' });
-      const encryptedStorage = createMMKV({
+      const plainStorage = new MMKV({ id: 'plain-test' });
+      const encryptedStorage = new MMKV({
         id: 'encrypted-isolation-test-128',
         encryptionKey: 'secret-key-456',
       });
 
       const key = 'shared-key';
-      plainStorage.set(key, 'plain-value');
-      encryptedStorage.set(key, 'encrypted-value');
+      plainStorage.setString(key, 'plain-value');
+      encryptedStorage.setString(key, 'encrypted-value');
 
       expect(plainStorage.getString(key)).toStrictEqual('plain-value');
       expect(encryptedStorage.getString(key)).toStrictEqual('encrypted-value');
@@ -560,12 +582,12 @@ describe('MMKV Encryption & Security', () => {
 
     it('should handle recryption', (context) => {
       context.skip(Platform.OS === 'web', 'encryption is not supported on Web');
-      const storage = createMMKV({ id: 'recrypt-test-128' });
+      const storage = new MMKV({ id: 'recrypt-test-128' });
 
       expect(storage.isEncrypted).toStrictEqual(false);
 
       // Set data without encryption
-      storage.set('data-key', 'original-data');
+      storage.setString('data-key', 'original-data');
       expect(storage.getString('data-key')).toStrictEqual('original-data');
 
       // Encrypt the storage
@@ -588,13 +610,13 @@ describe('MMKV Encryption & Security', () => {
       context.skip(Platform.OS === 'web', 'encryption is not supported on Web');
       // Test maximum key length (16 bytes)
       const maxKey = '1234567890123456'; // exactly 16 characters
-      const storage = createMMKV({
+      const storage = new MMKV({
         id: 'key-validation-test',
         encryptionKey: maxKey,
       });
 
       expect(storage.isEncrypted).toStrictEqual(true);
-      storage.set('test', 'value');
+      storage.setString('test', 'value');
       expect(storage.getString('test')).toStrictEqual('value');
 
       storage.clearAll();
@@ -605,15 +627,15 @@ describe('MMKV Encryption & Security', () => {
     it('should create encrypted instance and store data', (context) => {
       context.skip(Platform.OS === 'web', 'encryption is not supported on Web');
       const encryptionKey = 'test-key-123456-longer-than-16';
-      const storage = createMMKV({
+      const storage = new MMKV({
         id: 'encrypted-test-256',
         encryptionKey,
         encryptionType: 'AES-256',
       });
 
-      storage.set('secret-data', 'confidential information');
-      storage.set('secret-number', 42);
-      storage.set('secret-boolean', true);
+      storage.setString('secret-data', 'confidential information');
+      storage.setNumber('secret-number', 42);
+      storage.setBoolean('secret-boolean', true);
 
       expect(storage.getString('secret-data')).toStrictEqual(
         'confidential information',
@@ -624,16 +646,16 @@ describe('MMKV Encryption & Security', () => {
 
     it('should isolate encrypted and non-encrypted instances', (context) => {
       context.skip(Platform.OS === 'web', 'encryption is not supported on Web');
-      const plainStorage = createMMKV({ id: 'plain-test' });
-      const encryptedStorage = createMMKV({
+      const plainStorage = new MMKV({ id: 'plain-test' });
+      const encryptedStorage = new MMKV({
         id: 'encrypted-isolation-test-256',
         encryptionKey: 'secret-key-456',
         encryptionType: 'AES-256',
       });
 
       const key = 'shared-key';
-      plainStorage.set(key, 'plain-value');
-      encryptedStorage.set(key, 'encrypted-value');
+      plainStorage.setString(key, 'plain-value');
+      encryptedStorage.setString(key, 'encrypted-value');
 
       expect(plainStorage.getString(key)).toStrictEqual('plain-value');
       expect(encryptedStorage.getString(key)).toStrictEqual('encrypted-value');
@@ -646,11 +668,11 @@ describe('MMKV Encryption & Security', () => {
     it('should handle recryption', (context) => {
       context.skip(Platform.OS === 'web', 'encryption is not supported on Web');
       // TODO: Add encryptionType to recrypt
-      const storage = createMMKV({ id: 'recrypt-test-256' });
+      const storage = new MMKV({ id: 'recrypt-test-256' });
       expect(storage.isEncrypted).toStrictEqual(false);
 
       // Set data without encryption
-      storage.set('data-key', 'original-data');
+      storage.setString('data-key', 'original-data');
       expect(storage.getString('data-key')).toStrictEqual('original-data');
 
       // Encrypt the storage
@@ -673,13 +695,13 @@ describe('MMKV Encryption & Security', () => {
       context.skip(Platform.OS === 'web', 'encryption is not supported on Web');
       // Test maximum key length (32 bytes)
       const maxKey = '12345678901234561234567890123456'; // exactly 32 characters
-      const storage = createMMKV({
+      const storage = new MMKV({
         id: 'key-validation-test',
         encryptionKey: maxKey,
         encryptionType: 'AES-256',
       });
 
-      storage.set('test', 'value');
+      storage.setString('test', 'value');
       expect(storage.getString('test')).toStrictEqual('value');
 
       storage.clearAll();
@@ -697,12 +719,12 @@ describe('MMKV Read-Only Mode', () => {
       Platform.OS === 'web',
       'read-only mode is not implemented on Web',
     );
-    const storage = createMMKV({ id: 'read-only-fresh-test', readOnly: true });
+    const storage = new MMKV({ id: 'read-only-fresh-test', readOnly: true });
     expect(storage.isReadOnly).toStrictEqual(true);
   });
 
   it('should report isReadOnly as false for writable instance', () => {
-    const storage = createMMKV({ id: 'writable-mode-test' });
+    const storage = new MMKV({ id: 'writable-mode-test' });
     expect(storage.isReadOnly).toStrictEqual(false);
     storage.clearAll();
   });
@@ -712,8 +734,8 @@ describe('MMKV Read-Only Mode', () => {
       Platform.OS === 'web',
       'read-only mode is not implemented on Web',
     );
-    const storage = createMMKV({ id: 'read-only-set-test', readOnly: true });
-    expect(() => storage.set('key', 'value')).toThrow();
+    const storage = new MMKV({ id: 'read-only-set-test', readOnly: true });
+    expect(() => storage.setString('key', 'value')).toThrow();
   });
 
   it('should not remove values in read-only mode', (context) => {
@@ -721,7 +743,7 @@ describe('MMKV Read-Only Mode', () => {
       Platform.OS === 'web',
       'read-only mode is not implemented on Web',
     );
-    const storage = createMMKV({ id: 'read-only-remove-test', readOnly: true });
+    const storage = new MMKV({ id: 'read-only-remove-test', readOnly: true });
     // MMKV silently no-ops remove on read-only instances
     expect(storage.remove('key')).toStrictEqual(false);
   });
@@ -731,7 +753,7 @@ describe('MMKV Read-Only Mode', () => {
       Platform.OS === 'web',
       'read-only mode is not implemented on Web',
     );
-    const storage = createMMKV({ id: 'read-only-clear-test', readOnly: true });
+    const storage = new MMKV({ id: 'read-only-clear-test', readOnly: true });
     // MMKV silently no-ops clearAll on read-only instances
     storage.clearAll();
     expect(storage.length).toStrictEqual(0);
@@ -742,7 +764,7 @@ describe('MMKV Read-Only Mode', () => {
       Platform.OS === 'web',
       'read-only mode is not implemented on Web',
     );
-    const storage = createMMKV({ id: 'read-only-keys-test', readOnly: true });
+    const storage = new MMKV({ id: 'read-only-keys-test', readOnly: true });
 
     expect(storage.contains('nonexistent')).toBe(false);
     expect(storage.getAllKeys()).toEqual([]);
@@ -753,73 +775,76 @@ describe('MMKV Read-Only Mode', () => {
 describe('MMKV Compare Before Set', () => {
   afterEach(() => {
     try {
-      createMMKV({ id: 'compare-before-set-test' }).clearAll();
-      createMMKV({ id: 'compare-disabled-test' }).clearAll();
+      new MMKV({ id: 'compare-before-set-test' }).clearAll();
+      new MMKV({ id: 'compare-disabled-test' }).clearAll();
     } catch {
       // Instances might not exist, that's okay
     }
   });
 
   it('should create instance with compareBeforeSet enabled', () => {
-    const storage = createMMKV({
+    const storage = new MMKV({
       id: 'compare-before-set-test',
       compareBeforeSet: true,
     });
 
-    storage.set('key', 'value');
+    storage.setString('key', 'value');
     expect(storage.getString('key')).toStrictEqual('value');
 
-    storage.set('key', 'updated');
+    storage.setString('key', 'updated');
     expect(storage.getString('key')).toStrictEqual('updated');
   });
 
   it('should create instance with compareBeforeSet disabled', () => {
-    const storage = createMMKV({
+    const storage = new MMKV({
       id: 'compare-disabled-test',
       compareBeforeSet: false,
     });
 
-    storage.set('key', 'value');
+    storage.setString('key', 'value');
     expect(storage.getString('key')).toStrictEqual('value');
 
-    storage.set('key', 'updated');
+    storage.setString('key', 'updated');
     expect(storage.getString('key')).toStrictEqual('updated');
   });
 
   it('should not change byteSize when setting same value with compareBeforeSet', () => {
-    const storage = createMMKV({
+    const storage = new MMKV({
       id: 'compare-before-set-test',
       compareBeforeSet: true,
     });
 
-    storage.set('str', 'hello');
-    storage.set('num', 42);
-    storage.set('bool', true);
-    storage.set('buf', new Uint8Array([1, 2, 3]).buffer);
+    storage.setString('str', 'hello');
+    storage.setNumber('num', 42);
+    storage.setBoolean('bool', true);
+    storage.setArrayBuffer('buf', new Uint8Array([1, 2, 3]).buffer);
 
     const sizeAfterInitialSet = storage.byteSize;
 
     // Set same values again
-    storage.set('str', 'hello');
-    storage.set('num', 42);
-    storage.set('bool', true);
-    storage.set('buf', new Uint8Array([1, 2, 3]).buffer);
+    storage.setString('str', 'hello');
+    storage.setNumber('num', 42);
+    storage.setBoolean('bool', true);
+    storage.setArrayBuffer('buf', new Uint8Array([1, 2, 3]).buffer);
 
     // byteSize should not have changed
     expect(storage.byteSize).toStrictEqual(sizeAfterInitialSet);
   });
 
   it('should change byteSize when setting a different value with compareBeforeSet', () => {
-    const storage = createMMKV({
+    const storage = new MMKV({
       id: 'compare-before-set-test',
       compareBeforeSet: true,
     });
 
-    storage.set('key', 'short');
+    storage.setString('key', 'short');
     const sizeAfterInitialSet = storage.byteSize;
 
     // Set a longer value - byteSize should increase
-    storage.set('key', 'a much longer string value that takes more space');
+    storage.setString(
+      'key',
+      'a much longer string value that takes more space',
+    );
     expect(storage.byteSize).toBeGreaterThan(sizeAfterInitialSet);
   });
 });
@@ -828,7 +853,7 @@ describe('MMKV Storage Management', () => {
   let storage: MMKV;
 
   beforeEach(() => {
-    storage = createMMKV({ id: 'storage-management-test' });
+    storage = new MMKV({ id: 'storage-management-test' });
     storage.clearAll();
   });
 
@@ -840,31 +865,31 @@ describe('MMKV Storage Management', () => {
     it('should track storage byte size correctly', () => {
       const initialSize = storage.byteSize;
 
-      storage.set('test-key', 'test-value');
+      storage.setString('test-key', 'test-value');
       expect(storage.byteSize).toBeGreaterThan(initialSize);
 
       const sizeAfterSet = storage.byteSize;
 
-      storage.set('another-key', 'another-value');
+      storage.setString('another-key', 'another-value');
       expect(storage.byteSize).toBeGreaterThan(sizeAfterSet);
     });
 
     it('should track storage key length correctly', () => {
       const initialLength = storage.length;
 
-      storage.set('test-key', 'test-value');
+      storage.setString('test-key', 'test-value');
       expect(storage.length).toStrictEqual(initialLength + 1);
 
       const lengthAfterSet = storage.length;
 
-      storage.set('another-key', 'another-value');
+      storage.setString('another-key', 'another-value');
       expect(storage.length).toBeGreaterThan(lengthAfterSet);
     });
 
     it('should handle trim operation', () => {
       // Add some data
       for (let i = 0; i < 100; i++) {
-        storage.set(`key-${i}`, `value-${i}`);
+        storage.setString(`key-${i}`, `value-${i}`);
       }
 
       const sizeBeforeTrim = storage.byteSize;
@@ -886,10 +911,10 @@ describe('MMKV Storage Management', () => {
 
     it('should handle clearAll correctly', () => {
       // Add various types of data
-      storage.set('string-key', 'string-value');
-      storage.set('number-key', 123.456);
-      storage.set('boolean-key', true);
-      storage.set('buffer-key', new Uint8Array([1, 2, 3]).buffer);
+      storage.setString('string-key', 'string-value');
+      storage.setNumber('number-key', 123.456);
+      storage.setBoolean('boolean-key', true);
+      storage.setArrayBuffer('buffer-key', new Uint8Array([1, 2, 3]).buffer);
 
       expect(storage.getAllKeys().length).toStrictEqual(4);
       expect(storage.byteSize).toBeGreaterThan(0);
@@ -907,13 +932,13 @@ describe('MMKV Storage Management', () => {
 
     it('should handle storage operations after clearAll', () => {
       // Add data, clear, then add again
-      storage.set('initial-key', 'initial-value');
+      storage.setString('initial-key', 'initial-value');
       expect(storage.getString('initial-key')).toStrictEqual('initial-value');
 
       storage.clearAll();
       expect(storage.getString('initial-key')).toBeUndefined();
 
-      storage.set('new-key', 'new-value');
+      storage.setString('new-key', 'new-value');
       expect(storage.getString('new-key')).toStrictEqual('new-value');
       expect(storage.getAllKeys()).toEqual(['new-key']);
     });
@@ -925,7 +950,7 @@ describe('MMKV Storage Management', () => {
 
       // Rapid writes
       for (let i = 0; i < iterations; i++) {
-        storage.set(`rapid-${i}`, i);
+        storage.setNumber(`rapid-${i}`, i);
       }
 
       // Rapid reads
@@ -949,9 +974,9 @@ describe('MMKV Storage Management', () => {
 
       for (let i = 0; i < operations; i++) {
         // Mix of different operations
-        storage.set(`mixed-string-${i}`, `value-${i}`);
-        storage.set(`mixed-number-${i}`, i * 1.5);
-        storage.set(`mixed-boolean-${i}`, i % 2 === 0);
+        storage.setString(`mixed-string-${i}`, `value-${i}`);
+        storage.setNumber(`mixed-number-${i}`, i * 1.5);
+        storage.setBoolean(`mixed-boolean-${i}`, i % 2 === 0);
 
         if (i % 10 === 0) {
           storage.getAllKeys();
@@ -987,7 +1012,7 @@ describe('MMKV Storage Management', () => {
 describe('MMKV Multi-Process Mode', () => {
   afterEach(() => {
     try {
-      createMMKV({ id: 'multi-process-test' }).clearAll();
+      new MMKV({ id: 'multi-process-test' }).clearAll();
     } catch {
       // Instance might not exist, that's okay
     }
@@ -998,12 +1023,12 @@ describe('MMKV Multi-Process Mode', () => {
       Platform.OS === 'web',
       'multi-process mode is not supported on Web',
     );
-    const storage = createMMKV({
+    const storage = new MMKV({
       id: 'multi-process-test',
       mode: 'multi-process',
     });
 
-    storage.set('key', 'value');
+    storage.setString('key', 'value');
     expect(storage.getString('key')).toStrictEqual('value');
   });
 
@@ -1012,20 +1037,20 @@ describe('MMKV Multi-Process Mode', () => {
       Platform.OS === 'web',
       'multi-process mode is not supported on Web',
     );
-    const storage = createMMKV({
+    const storage = new MMKV({
       id: 'multi-process-test',
       mode: 'multi-process',
     });
 
-    storage.set('str', 'hello');
-    storage.set('num', 3.14);
-    storage.set('bool', true);
-    storage.set('buf', new Uint8Array([10, 20, 30]).buffer);
+    storage.setString('str', 'hello');
+    storage.setNumber('num', 3.14);
+    storage.setBoolean('bool', true);
+    storage.setArrayBuffer('buf', new Uint8Array([10, 20, 30]).buffer);
 
     expect(storage.getString('str')).toStrictEqual('hello');
     expect(storage.getNumber('num')).toStrictEqual(3.14);
     expect(storage.getBoolean('bool')).toStrictEqual(true);
-    expect(new Uint8Array(storage.getBuffer('buf')!)).toEqual(
+    expect(new Uint8Array(storage.getArrayBuffer('buf')!)).toEqual(
       new Uint8Array([10, 20, 30]),
     );
   });
@@ -1035,13 +1060,13 @@ describe('MMKV Multi-Process Mode', () => {
       Platform.OS === 'web',
       'multi-process mode is not supported on Web',
     );
-    const storage = createMMKV({
+    const storage = new MMKV({
       id: 'multi-process-test',
       mode: 'multi-process',
     });
 
-    storage.set('a', 'one');
-    storage.set('b', 'two');
+    storage.setString('a', 'one');
+    storage.setString('b', 'two');
     expect(storage.contains('a')).toBe(true);
 
     storage.remove('a');
@@ -1057,13 +1082,13 @@ describe('MMKV Multi-Process Mode', () => {
       Platform.OS === 'web',
       'multi-process mode is not supported on Web',
     );
-    const storage = createMMKV({
+    const storage = new MMKV({
       id: 'multi-process-encrypted-test',
       mode: 'multi-process',
       encryptionKey: 'secret-key-12345',
     });
 
-    storage.set('secret', 'data');
+    storage.setString('secret', 'data');
     expect(storage.getString('secret')).toStrictEqual('data');
     expect(storage.isEncrypted).toStrictEqual(true);
 
@@ -1075,7 +1100,7 @@ describe('MMKV Listeners & Observers', () => {
   let storage: MMKV;
 
   beforeEach(() => {
-    storage = createMMKV({ id: 'listener-test' });
+    storage = new MMKV({ id: 'listener-test' });
     storage.clearAll();
   });
 
@@ -1091,9 +1116,9 @@ describe('MMKV Listeners & Observers', () => {
         changedKeys.push(key);
       });
 
-      storage.set('test-key-1', 'value1');
-      storage.set('test-key-2', 42);
-      storage.set('test-key-3', true);
+      storage.setString('test-key-1', 'value1');
+      storage.setNumber('test-key-2', 42);
+      storage.setBoolean('test-key-3', true);
 
       // Wait for the listeners to trigger
       await waitForNextTick();
@@ -1113,9 +1138,9 @@ describe('MMKV Listeners & Observers', () => {
       });
 
       const testKey = 'update-test';
-      storage.set(testKey, 'original');
-      storage.set(testKey, 'updated');
-      storage.set(testKey, 'final');
+      storage.setString(testKey, 'original');
+      storage.setString(testKey, 'updated');
+      storage.setString(testKey, 'final');
 
       // Wait for the listeners to trigger
       await waitForNextTick();
@@ -1134,7 +1159,7 @@ describe('MMKV Listeners & Observers', () => {
       });
 
       const testKey = 'remove-test';
-      storage.set(testKey, 'value');
+      storage.setString(testKey, 'value');
 
       await waitForNextTick();
       storage.remove(testKey);
@@ -1159,7 +1184,7 @@ describe('MMKV Listeners & Observers', () => {
         listener2Changes.push(key);
       });
 
-      storage.set('multi-listener-test', 'value');
+      storage.setString('multi-listener-test', 'value');
 
       // Wait for the listeners to trigger
       await waitForNextTick();
@@ -1178,7 +1203,7 @@ describe('MMKV Listeners & Observers', () => {
         changedKeys.push(key);
       });
 
-      storage.set('before-removal', 'value');
+      storage.setString('before-removal', 'value');
 
       // Wait for the listeners to trigger
       await waitForNextTick();
@@ -1187,7 +1212,7 @@ describe('MMKV Listeners & Observers', () => {
 
       listener.remove();
 
-      storage.set('after-removal', 'value');
+      storage.setString('after-removal', 'value');
 
       // Wait for potential listeners to trigger (but they shouldn't)
       await waitForNextTick();
@@ -1211,8 +1236,8 @@ describe('MMKV Listeners & Observers', () => {
         changedKeys.push(key);
       });
 
-      storage.set('key1', 'value1');
-      storage.set('key2', 'value2');
+      storage.setString('key1', 'value1');
+      storage.setString('key2', 'value2');
 
       // Wait for the listeners to trigger
       await waitForNextTick();
@@ -1232,23 +1257,23 @@ describe('MMKV Listeners & Observers', () => {
 
 describe('Deleting instances and checking if they exist', () => {
   beforeEach(() => {
-    deleteMMKV('some-instance');
-    deleteMMKV('some-non-existing-instance');
+    MMKV.deleteInstance('some-instance');
+    MMKV.deleteInstance('some-non-existing-instance');
   });
 
   describe('Checking if an instance exists', () => {
     it('should exist', (context) => {
       context.skip(
         Platform.OS === 'web',
-        'existsMMKV cannot detect a freshly-created empty instance on Web',
+        'existsInstance cannot detect a freshly-created empty instance on Web',
       );
-      createMMKV({ id: 'some-instance' });
-      const exists = existsMMKV('some-instance');
+      const storage = new MMKV({ id: 'some-instance' });
+      const exists = MMKV.existsInstance(storage.id);
       expect(exists).toStrictEqual(true);
     });
 
     it('should not exist', () => {
-      const exists = existsMMKV('some-non-existing-instance');
+      const exists = MMKV.existsInstance('some-non-existing-instance');
       expect(exists).toStrictEqual(false);
     });
   });
@@ -1257,27 +1282,47 @@ describe('Deleting instances and checking if they exist', () => {
     it('should delete properly', (context) => {
       context.skip(
         Platform.OS === 'web',
-        'deleteMMKV cannot remove a freshly-created empty instance on Web',
+        'deleteInstance cannot remove a freshly-created empty instance on Web',
       );
-      createMMKV({ id: 'some-instance' });
-      const wasDeleted = deleteMMKV('some-instance');
+      const storage = new MMKV({ id: 'some-instance' });
+      const wasDeleted = MMKV.deleteInstance(storage.id);
       expect(wasDeleted).toStrictEqual(true);
     });
 
-    it('should delete properly and exists should be false', (context) => {
+    it('checks and deletes an instance with stored values', () => {
+      const id = 'some-instance';
+      const storage = new MMKV({ id });
+      storage.setString('key', 'value');
+
+      expect(MMKV.existsInstance(id)).toBe(true);
+      expect(MMKV.deleteInstance(id)).toBe(true);
+      expect(MMKV.existsInstance(id)).toBe(false);
+    });
+
+    it('skips deleted storage during app state events', (context) => {
       context.skip(
         Platform.OS === 'web',
-        'existsMMKV/deleteMMKV semantics differ on Web',
+        'AppState storage handling is native',
       );
-      createMMKV({ id: 'some-instance' });
-      const wasDeleted = deleteMMKV('some-instance');
-      expect(wasDeleted).toStrictEqual(true);
-      const exists = existsMMKV('some-instance');
-      expect(exists).toStrictEqual(false);
+      const id = 'some-instance';
+      const storage = new MMKV({ id });
+      const alias = new MMKV({ id });
+      storage.setString('before', 'deleted');
+      expect(MMKV.deleteInstance(id)).toBe(true);
+
+      DeviceEventEmitter.emit('appStateDidChange', { app_state: 'active' });
+      DeviceEventEmitter.emit('memoryWarning');
+      expect(alias).toBeInstanceOf(MMKV);
+
+      const reopened = new MMKV({ id });
+      reopened.setString('after', 'reopened');
+      DeviceEventEmitter.emit('appStateDidChange', { app_state: 'active' });
+      expect(reopened.getString('after')).toBe('reopened');
+      MMKV.deleteInstance(id);
     });
 
     it('should not delete', () => {
-      const wasDeleted = deleteMMKV('some-non-existing-instance');
+      const wasDeleted = MMKV.deleteInstance('some-non-existing-instance');
       expect(wasDeleted).toStrictEqual(false);
     });
   });
@@ -1287,7 +1332,7 @@ describe('MMKV Error Handling & Edge Cases', () => {
   let storage: MMKV;
 
   beforeEach(() => {
-    storage = createMMKV({ id: 'error-handling-test' });
+    storage = new MMKV({ id: 'error-handling-test' });
     storage.clearAll();
   });
 
@@ -1299,7 +1344,7 @@ describe('MMKV Error Handling & Edge Cases', () => {
     it('should handle invalid key operations gracefully', () => {
       // Empty string key should throw
       expect(() => {
-        storage.set('', 'empty-key-value');
+        storage.setString('', 'empty-key-value');
       }).toThrow();
     });
 
@@ -1310,7 +1355,7 @@ describe('MMKV Error Handling & Edge Cases', () => {
       for (let i = 0; i < 100; i++) {
         promises.push(
           Promise.resolve().then(() => {
-            storage.set(`concurrent-${i}`, i);
+            storage.setNumber(`concurrent-${i}`, i);
             return storage.getNumber(`concurrent-${i}`);
           }),
         );
@@ -1334,7 +1379,7 @@ describe('MMKV Error Handling & Edge Cases', () => {
       ];
 
       unicodeTests.forEach((test) => {
-        storage.set(test.key, test.value);
+        storage.setString(test.key, test.value);
         expect(storage.getString(test.key)).toStrictEqual(test.value);
       });
     });
@@ -1351,7 +1396,7 @@ describe('MMKV Error Handling & Edge Cases', () => {
       ];
 
       extremeNumbers.forEach((test) => {
-        storage.set(test.key, test.value);
+        storage.setNumber(test.key, test.value);
         const retrieved = storage.getNumber(test.key);
 
         if (isNaN(test.value)) {
@@ -1380,10 +1425,14 @@ describe('MMKV Error Handling & Edge Cases', () => {
       };
 
       // Set all data
-      [...testData.strings, ...testData.numbers, ...testData.booleans].forEach(
-        (item) => {
-          storage.set(item.key, item.value);
-        },
+      testData.strings.forEach(({ key, value }) =>
+        storage.setString(key, value),
+      );
+      testData.numbers.forEach(({ key, value }) =>
+        storage.setNumber(key, value),
+      );
+      testData.booleans.forEach(({ key, value }) =>
+        storage.setBoolean(key, value),
       );
 
       // Perform random operations
@@ -1396,7 +1445,7 @@ describe('MMKV Error Handling & Edge Cases', () => {
             break;
           case 1: // Random update
             const updateKey = `num-${Math.floor(Math.random() * 50)}`;
-            storage.set(updateKey, Math.random() * 2000);
+            storage.setNumber(updateKey, Math.random() * 2000);
             break;
           case 2: // Check contains
             const checkKey = `bool-${Math.floor(Math.random() * 50)}`;

@@ -1,18 +1,21 @@
 import { useCallback, useSyncExternalStore } from 'react'
-import { getDefaultMMKVInstance } from '../createMMKV/getDefaultMMKVInstance'
+import { getDefaultMMKVInstance } from '../getDefaultMMKVInstance'
 import type { MMKV } from '../specs/MMKV.nitro'
 
 const getServerSnapshot = () => undefined
 
 export function createMMKVHook<
-  T extends (boolean | number | string | ArrayBufferLike) | undefined,
-  TSet extends T | undefined,
-  TSetAction extends TSet | ((current: T) => TSet),
->(getter: (instance: MMKV, key: string) => T) {
+  T extends boolean | number | string | ArrayBuffer | bigint,
+>(
+  getter: (instance: MMKV, key: string) => T | undefined,
+  setter: (instance: MMKV, key: string, value: T) => void
+) {
+  type Value = T | undefined
+  type SetAction = Value | ((current: Value) => Value)
   return (
     key: string,
     instance?: MMKV
-  ): [value: T, setValue: (value: TSetAction) => void] => {
+  ): [value: Value, setValue: (value: SetAction) => void] => {
     const mmkv = instance ?? getDefaultMMKVInstance()
 
     const value = useSyncExternalStore(
@@ -28,37 +31,19 @@ export function createMMKVHook<
         [key, mmkv]
       ),
       useCallback(() => getter(mmkv, key), [key, mmkv]),
-      // There's no storage on the server, so a value is unset there, and while
-      // the browser hydrates the server's HTML. React only calls this then, so
-      // it never runs on native. Every getter returns `undefined` for an unset
-      // value, so `T` always includes it.
-      getServerSnapshot as () => T
+      // Storage values are unset on the server and during hydration.
+      getServerSnapshot
     )
 
     // update value by user set
     const set = useCallback(
-      (v: TSetAction) => {
-        const newValue = typeof v === 'function' ? v(getter(mmkv, key)) : v
-        switch (typeof newValue) {
-          case 'number':
-          case 'string':
-          case 'boolean':
-            mmkv.set(key, newValue)
-            break
-          case 'undefined':
-            mmkv.remove(key)
-            break
-          case 'object':
-            if (newValue instanceof ArrayBuffer) {
-              mmkv.set(key, newValue)
-              break
-            } else {
-              throw new Error(
-                `MMKV: Type object (${newValue}) is not supported!`
-              )
-            }
-          default:
-            throw new Error(`MMKV: Type ${typeof newValue} is not supported!`)
+      (action: SetAction) => {
+        const newValue =
+          typeof action === 'function' ? action(getter(mmkv, key)) : action
+        if (newValue === undefined) {
+          mmkv.remove(key)
+        } else {
+          setter(mmkv, key, newValue)
         }
       },
       [key, mmkv]

@@ -10,6 +10,7 @@ import { createMMKVHook } from './createMMKVHook'
  * const [privateKey, setPrivateKey] = useMMKVBuffer("user.privateKey")
  * ```
  */
-export const useMMKVBuffer = createMMKVHook((instance, key) =>
-  instance.getBuffer(key)
+export const useMMKVBuffer = createMMKVHook(
+  (instance, key) => instance.getArrayBuffer(key),
+  (instance, key, value) => instance.setArrayBuffer(key, value)
 )

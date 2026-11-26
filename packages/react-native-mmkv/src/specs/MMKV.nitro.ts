@@ -1,7 +1,8 @@
-import { Android, Apple, type HybridObject } from 'nitro-core'
+import { Android, Apple, type HybridObject, type Int64 } from 'nitro-core'
+import type { Configuration, EncryptionType } from './Configuration'
+import type { MMKVPlatformContext } from './MMKVPlatformContext.nitro'
 
 export * from '#nitro/MMKV'
-import type { EncryptionType } from './MMKVFactory.nitro'
 
 export interface Listener {
   remove: () => void
@@ -16,8 +17,19 @@ export interface Listener {
   implementation: { className: 'HybridMMKV', include: '"HybridMMKV.hpp"' },
 })
 export declare class MMKV extends HybridObject {
-  /** The name of this HybridObject. */
-  readonly name: string
+  constructor(configuration?: Configuration)
+
+  /** Check whether storage with the given ID exists. */
+  static existsInstance(id: string): boolean
+  /** Delete the storage with the given ID. */
+  static deleteInstance(id: string): boolean
+
+  /** @internal */
+  static initialize(context: MMKVPlatformContext): void
+  /** @internal */
+  static trimAll(): void
+  /** @internal */
+  static checkAllContentChanged(): void
 
   /**
    * Get the ID of this {@linkcode MMKV} instance.
@@ -54,7 +66,28 @@ export declare class MMKV extends HybridObject {
    * @throws an Error if the {@linkcode key} is empty.
    * @throws an Error if the {@linkcode value} cannot be set.
    */
-  set(key: string, value: boolean | string | number | ArrayBuffer): void
+  setString(key: string, value: string): void
+  /**
+   * Store a boolean. The key must be non-empty, and the storage must be writable.
+   */
+  setBoolean(key: string, value: boolean): void
+  /**
+   * Store a double-precision number. The key must be non-empty, and the storage must be writable.
+   */
+  setNumber(key: string, value: number): void
+  /**
+   * Store raw bytes. The key must be non-empty, and the storage must be writable.
+   */
+  setArrayBuffer(key: string, value: ArrayBuffer): void
+  /**
+   * Store a signed 64-bit integer.
+   * @throws If the key is empty, the write fails, or the value is outside -2^63 through 2^63 - 1.
+   */
+  setBigInt(key: string, value: Int64): void
+  /**
+   * Get the signed 64-bit integer for the given key, or `undefined` if it does not exist.
+   */
+  getBigInt(key: string): Int64 | undefined
   /**
    * Get the boolean value for the given `key`, or `undefined` if it does not exist.
    *
@@ -78,7 +111,7 @@ export declare class MMKV extends HybridObject {
    *
    * @default undefined
    */
-  getBuffer(key: string): ArrayBuffer | undefined
+  getArrayBuffer(key: string): ArrayBuffer | undefined
   /**
    * Checks whether the given `key` is being stored in this MMKV instance.
    */

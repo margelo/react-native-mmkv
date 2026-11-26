@@ -9,14 +9,12 @@
 #include <NitroModules/HybridClassRegistry.hpp>
 #include <NitroMmkv/private/JHybridMMKVPlatformContextSpec.hpp>
 #include <NitroMmkv/HybridMMKVSpec.hpp>
-#include <NitroMmkv/HybridMMKVFactorySpec.hpp>
 
 namespace margelo::nitro::mmkv {
   void registerAllNatives() {
     margelo::nitro::mmkv::JHybridMMKVPlatformContextSpec::CxxPart::registerNatives();
 
     HybridClassRegistry::registerHybridClass("mmkv.MMKV", HybridMMKVSpec::Class::get());
-    HybridClassRegistry::registerHybridClass("mmkv.MMKVFactory", HybridMMKVFactorySpec::Class::get());
     HybridClassRegistry::registerHybridClass("mmkv.MMKVPlatformContext", JHybridMMKVPlatformContextSpec::Class::get());
   }
 }

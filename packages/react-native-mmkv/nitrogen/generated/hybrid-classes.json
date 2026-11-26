@@ -17,22 +17,6 @@
         "language": "c++"
       }
     },
-    "MMKVFactory": {
-      "android": {
-        "implementation": {
-          "className": "HybridMMKVFactory",
-          "include": "\"HybridMMKVFactory.hpp\""
-        },
-        "language": "c++"
-      },
-      "apple": {
-        "implementation": {
-          "className": "HybridMMKVFactory",
-          "include": "\"HybridMMKVFactory.hpp\""
-        },
-        "language": "c++"
-      }
-    },
     "MMKVPlatformContext": {
       "android": {
         "implementation": {

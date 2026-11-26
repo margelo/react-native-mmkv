@@ -23,6 +23,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
+    "stripInternal": true,
     "target": "esnext",
     "types": ["jest", "node"],
     "verbatimModuleSyntax": true

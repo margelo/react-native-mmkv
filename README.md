@@ -1,5 +1,5 @@
-| **V4 Docs** | [old V3 Docs](./README_V3.md) |
-|:---|:---|
+| **V5 Docs** | [V4 Docs](https://github.com/margelo/react-native-mmkv/blob/v4.3.2/README.md) | [V3 Docs](./README_V3.md) |
+|:---|:---|:---|
 
 <a href="https://margelo.com">
   <picture>
@@ -35,7 +35,7 @@
 
 ## Features
 
-* **Get** and **set** strings, booleans, numbers and ArrayBuffers
+* **Get** and **set** strings, booleans, numbers, BigInts, and ArrayBuffers
 * **Fully synchronous** calls, no async/await, no Promises, no Bridge.
 * **Encryption** support (secure storage)
 * **Multiple instances** support (separate user-data with global data)
@@ -47,8 +47,7 @@
 * Easy to use **React Hooks** API
 
 > [!IMPORTANT]
-> - **You're looking at MMKV V4. If you're still on V3, check out the [V3 docs here](./README_V3.md)**!
-> - react-native-mmkv **V4** is now a [Nitro Module](https://nitro.margelo.com). See the [V4 Upgrade Guide](./docs/V4_UPGRADE_GUIDE.md) for more information.
+> If you're moving from V4 to V5, follow the [V5 Upgrade Guide](./docs/V5_UPGRADE_GUIDE.md).
 
 ## Benchmark
 
@@ -75,20 +74,20 @@ npm install react-native-mmkv \
 npx react-native spm
 ```
 
-Native builds require React Native 0.88 or newer with the New Architecture. iOS builds use Swift Package Manager and Swift 6.4 or newer. To convert an existing CocoaPods app, run `npx react-native spm add --deintegrate`.
+Native builds require React Native 0.88 or newer with the New Architecture. iOS builds use Swift Package Manager and Swift 6.4 or newer.
 
 ## Usage
 
 ### Create a new instance
 
-To create a new instance of the MMKV storage, use `createMMKV()`. It is recommended that you re-use this instance throughout your entire app instead of creating a new instance each time, so `export` the `storage` object.
+To create a new instance of the MMKV storage, use the `MMKV` constructor. It is recommended that you re-use this instance throughout your entire app instead of creating a new instance each time, so `export` the `storage` object.
 
 #### Default
 
 ```ts
-import { createMMKV } from 'react-native-mmkv'
+import { MMKV } from 'react-native-mmkv'
 
-export const storage = createMMKV()
+export const storage = new MMKV()
 ```
 
 This creates a new storage instance using the default MMKV storage ID (`mmkv.default`).
@@ -101,9 +100,9 @@ See [Configuring App Groups](https://developer.apple.com/documentation/xcode/con
 #### Customize
 
 ```ts
-import { createMMKV } from 'react-native-mmkv'
+import { MMKV } from 'react-native-mmkv'
 
-export const storage = createMMKV({
+export const storage = new MMKV({
   id: `user-${userId}-storage`,
   path: `${USER_DIRECTORY}/storage`,
   encryptionKey: 'hunter2',
@@ -123,15 +122,16 @@ The following values can be configured:
 * `encryptionKey`: The MMKV instance's encryption/decryption key. By default, MMKV stores all key-values in plain text on file, relying on iOS's/Android's sandbox to make sure the file is encrypted. Should you worry about information leaking, you can choose to encrypt MMKV. (documentation: [iOS](https://github.com/Tencent/MMKV/wiki/iOS_advance#encryption) / [Android](https://github.com/Tencent/MMKV/wiki/android_advance#encryption))
 * `encryptionType`: The MMKV instance's encryption/decryption algorithm. By default, AES-128 encryption will be used, but you can switch to AES-256 for advanced security.
 * `mode`: The MMKV's process behaviour - when set to `multi-process`, the MMKV instance will assume data can be changed from the outside (e.g. App Clips, Extensions or App Groups).
-* `readOnly`: Whether this MMKV instance should be in read-only mode. This is typically more efficient and avoids unwanted writes to the data if not needed. Any call to `set(..)` will throw.
+* `readOnly`: Whether this MMKV instance should be in read-only mode. This is typically more efficient and avoids unwanted writes to the data if not needed. Writes throw when the instance is read-only.
 * `compareBeforeSet`: Whether this MMKV instance will compare values for equality before writing them to disk. By default this is disabled, enabling it might improve performance if values are repeatedly written to disk, even if they are already persisted.
 
 ### Set
 
 ```ts
-storage.set('user.name', 'Marc')
-storage.set('user.age', 21)
-storage.set('is-mmkv-fast-asf', true)
+storage.setString('user.name', 'Marc')
+storage.setNumber('user.age', 21)
+storage.setBoolean('is-mmkv-fast-asf', true)
+storage.setBigInt('user.account-id', 9007199254740993n)
 ```
 
 ### Get
@@ -140,6 +140,7 @@ storage.set('is-mmkv-fast-asf', true)
 const username = storage.getString('user.name') // 'Marc'
 const age = storage.getNumber('user.age') // 21
 const isMmkvFastAsf = storage.getBoolean('is-mmkv-fast-asf') // true
+const accountId = storage.getBigInt('user.account-id') // 9007199254740993n
 ```
 
 ### Hooks
@@ -148,6 +149,7 @@ const isMmkvFastAsf = storage.getBoolean('is-mmkv-fast-asf') // true
 const [username, setUsername] = useMMKVString('user.name')
 const [age, setAge] = useMMKVNumber('user.age')
 const [isMmkvFastAsf, setIsMmkvFastAsf] = useMMKVBoolean('is-mmkv-fast-asf')
+const [accountId, setAccountId] = useMMKVBigInt('user.account-id')
 ```
 
 ### Keys
@@ -157,7 +159,7 @@ const [isMmkvFastAsf, setIsMmkvFastAsf] = useMMKVBoolean('is-mmkv-fast-asf')
 const hasUsername = storage.contains('user.name')
 
 // getting all keys
-const keys = storage.getAllKeys() // ['user.name', 'user.age', 'is-mmkv-fast-asf']
+const keys = storage.getAllKeys() // ['user.name', 'user.age', 'is-mmkv-fast-asf', 'user.account-id']
 
 // delete a specific key + value
 const wasRemoved = storage.remove('user.name')
@@ -175,7 +177,7 @@ const user = {
 }
 
 // Serialize the object into a JSON string
-storage.set('user', JSON.stringify(user))
+storage.setString('user', JSON.stringify(user))
 
 // Deserialize the JSON string into an object
 const jsonUser = storage.getString('user') // '{ "username": "Marc", "age": 21 }'
@@ -202,10 +204,10 @@ const dataWriter = new Uint8Array(buffer)
 dataWriter[0] = 1
 dataWriter[1] = 100
 dataWriter[2] = 255
-storage.set('someToken', buffer)
+storage.setArrayBuffer('someToken', buffer)
 
-const buffer = storage.getBuffer('someToken')
-console.log(buffer) // [1, 100, 255]
+const token = storage.getArrayBuffer('someToken')
+if (token) console.log(new Uint8Array(token)) // [1, 100, 255]
 ```
 
 ### Size
@@ -224,30 +226,19 @@ if (size >= 4096) {
 To import all keys and values from another MMKV instance, use `importAllFrom(...)`:
 
 ```ts
-const storage = createMMKV(...)
-const otherStorage = createMMKV(...)
+const storage = new MMKV()
+const otherStorage = new MMKV({ id: 'other-storage' })
 
 const importedCount = storage.importAllFrom(otherStorage)
 ```
 
-### Check if an MMKV instance exists
-
-To check if an MMKV instance exists, use `existsMMKV(...)`:
+### Check or delete an instance
 
 ```ts
-import { existsMMKV } from 'react-native-mmkv'
+import { MMKV } from 'react-native-mmkv'
 
-const exists = existsMMKV('my-instance')
-```
-
-### Delete an MMKV instance
-
-To delete an MMKV instance, use `deleteMMKV(...)`:
-
-```ts
-import { deleteMMKV } from 'react-native-mmkv'
-
-const wasDeleted = deleteMMKV('my-instance')
+const exists = MMKV.existsInstance('my-instance')
+const wasDeleted = MMKV.deleteInstance('my-instance')
 ```
 
 ### Log Level
@@ -280,7 +271,32 @@ MMKV_LOG_LEVEL=4 xcodebuild -project MyApp.xcodeproj -scheme MyApp build
 
 ## Testing with Jest or Vitest
 
-A mocked MMKV instance is automatically used when testing with Jest or Vitest, so you will be able to use `createMMKV()` as per normal in your tests. Refer to [`example/__tests__/MMKV.harness.ts`](example/__tests__/MMKV.harness.ts) for an example using Jest.
+Select the in-memory implementation with the `react-native-mmkv-mock` resolver condition.
+
+In Jest, add it to your Jest config.
+
+```js
+module.exports = {
+  testEnvironmentOptions: {
+    customExportConditions: ['react-native', 'react-native-mmkv-mock'],
+  },
+}
+```
+
+In Vitest's Node environment, inline MMKV and add the condition to the SSR resolver.
+
+```ts
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  ssr: {
+    noExternal: ['react-native-mmkv'],
+    resolve: { conditions: ['node', 'react-native-mmkv-mock'] },
+  },
+})
+```
+
+The [example Harness suite](example/__tests__/MMKV.harness.ts) tests the native and web implementations.
 
 ## Documentation
 

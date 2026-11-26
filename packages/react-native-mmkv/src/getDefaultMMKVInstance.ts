@@ -1,10 +1,10 @@
-import type { MMKV } from '../specs/MMKV.nitro'
-import { createMMKV } from './createMMKV'
+import { MMKV as MMKVConstructor } from '#react-native-mmkv'
+import type { MMKV } from './specs/MMKV.nitro'
 
 let defaultInstance: MMKV | null = null
 export function getDefaultMMKVInstance(): MMKV {
   if (defaultInstance == null) {
-    defaultInstance = createMMKV()
+    defaultInstance = new MMKVConstructor()
   }
   return defaultInstance
 }
