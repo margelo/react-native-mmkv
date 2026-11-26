@@ -59,8 +59,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@react-native/eslint-config": "0.85.3",
-    "@react-native/jest-preset": "0.85.3",
+    "@react-native/eslint-config": "0.88.1",
+    "@react-native/jest-preset": "0.88.1",
     "@testing-library/react-native": "^13.3.1",
     "@types/jest": "^29.5.14",
     "@types/react": "^19.2.15",
@@ -69,9 +69,9 @@
     "eslint-config-prettier": "^10.1.8",
     "nitrogen": "0.35.9",
     "prettier": "^3.8.3",
-    "react": "19.2.6",
-    "react-dom": "19.2.6",
-    "react-native": "0.85.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.1",
     "react-native-nitro-modules": "0.35.9",
     "typescript": "^6.0.3"
   },
