@@ -3,35 +3,18 @@
   "cxxNamespace": [
     "mmkv"
   ],
-  "ios": {
-    "iosModuleName": "NitroMmkv"
-  },
   "android": {
-    "androidNamespace": [
+    "namespace": [
       "mmkv"
     ],
-    "androidCxxLibName": "NitroMmkv"
-  },
-  "autolinking": {
-    "MMKVFactory": {
-      "all": {
-        "language": "c++",
-        "implementationClassName": "HybridMMKVFactory"
-      }
-    },
-    "MMKVPlatformContext": {
-      "ios": {
-        "language": "swift",
-        "implementationClassName": "HybridMMKVPlatformContext"
-      },
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "HybridMMKVPlatformContext"
-      }
-    }
+    "cxxLibName": "NitroMmkv"
   },
   "ignorePaths": [
     "**/node_modules"
   ],
-  "gitAttributesGeneratedFlag": false
+  "gitAttributesGeneratedFlag": false,
+  "environment": "react-native",
+  "apple": {
+    "moduleName": "NitroMmkv"
+  }
 }

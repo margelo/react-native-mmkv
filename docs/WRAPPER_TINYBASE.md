@@ -1,34 +1,32 @@
-#  tinybase wrapper
+# TinyBase persistence
 
-If you want to use MMKV with [Tinybase](https://tinybase.org/api/persister-react-native-mmkv), follow these steps:
+Use TinyBase's [`createCustomPersister`](https://tinybase.org/api/persisters/functions/creation/createcustompersister/) to save a store with MMKV.
 
 ```ts
-import { createMMKV } from 'react-native-mmkv'
-import { createStore } from 'tinybase';
-import { createReactNativeMmkvPersister } from 'tinybase/persisters/persister-react-native-mmkv';
+import { MMKV } from 'react-native-mmkv'
+import { createStore } from 'tinybase'
+import { createCustomPersister } from 'tinybase/persisters'
 
-const storage = createMMKV()
-const store = createStore().setTables({ pets: { fido: { species: 'dog' } } });
-const persister = createReactNativeMmkvPersister(store, storage);
+const storage = new MMKV()
+const storageKey = 'my_tinybase'
 
-await persister.save();
+const store = createStore().setTables({ pets: { fido: { species: 'dog' } } })
+const persister = createCustomPersister(
+  store,
+  async () => {
+    const value = storage.getString(storageKey)
+    return value === undefined ? undefined : JSON.parse(value)
+  },
+  async (getContent) => {
+    storage.setString(storageKey, JSON.stringify(getContent()))
+  },
+  (listener) =>
+    storage.addOnValueChangedListener((key) => {
+      if (key === storageKey) listener()
+    }),
+  (subscription) => subscription.remove()
+)
+
+await persister.load()
+await persister.startAutoSave()
 ```
-
-Similarly, to set up with the react hook:
-
-```tsx
-const storage = createMMKV()
-
-const App = () => {
-  useCreatePersister(
-    store,
-    store => createReactNativeMmkvPersister(store, storage),
-    [],
-    async persister => {
-      // ...
-    },
-  );
-}
-```
-
-For more information check their official [docs](https://tinybase.org/api/persister-react-native-mmkv/functions/creation/createreactnativemmkvpersister/)

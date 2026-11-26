@@ -1,6 +1,6 @@
 import { AppState } from 'react-native'
 import type { AppStateStatus, NativeEventSubscription } from 'react-native'
-import { createMockMMKV } from '../createMMKV/createMockMMKV'
+import { MMKV } from '..'
 import { addContentChangedListener } from '../addContentChangedListener/addContentChangedListener'
 
 function mockAppStateChangeListener(): {
@@ -36,7 +36,7 @@ afterEach(() => {
 
 test('content changed listener checks content when app becomes active', () => {
   const appState = mockAppStateChangeListener()
-  const storage = createMockMMKV({ id: 'content-changed-listener-test' })
+  const storage = new MMKV({ id: 'content-changed-listener-test' })
   const checkContentChanged = jest.spyOn(storage, 'checkContentChanged')
 
   addContentChangedListener(storage)
@@ -50,7 +50,7 @@ test('content changed listener checks content when app becomes active', () => {
 
 test('content changed listener registers once per instance', () => {
   mockAppStateChangeListener()
-  const storage = createMockMMKV({
+  const storage = new MMKV({
     id: 'content-changed-listener-once-test',
   })
 

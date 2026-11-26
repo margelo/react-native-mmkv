@@ -1,8 +1,7 @@
 import { useRef } from 'react'
-import type { MMKV } from '../specs/MMKV.nitro'
-import type { Configuration } from '../specs/MMKVFactory.nitro'
-import { getDefaultMMKVInstance } from '../createMMKV/getDefaultMMKVInstance'
-import { createMMKV } from '../createMMKV/createMMKV'
+import { MMKV } from '../MMKV'
+import type { Configuration } from '../specs/Configuration'
+import { getDefaultMMKVInstance } from '../getDefaultMMKVInstance'
 
 function isConfigurationEqual(
   left?: Configuration,
@@ -42,7 +41,7 @@ export function useMMKV(configuration?: Configuration): MMKV {
     !isConfigurationEqual(lastConfiguration.current, configuration)
   ) {
     lastConfiguration.current = configuration
-    instance.current = createMMKV(configuration)
+    instance.current = new MMKV(configuration)
   }
 
   return instance.current

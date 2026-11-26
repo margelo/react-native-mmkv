@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "postinstall": "bun mmkv build",
-    "bootstrap": "bun i && bun run build && cd example && bundle install && bun pods",
+    "bootstrap": "bun install && bun example spm",
     "typecheck": "bun --filter=\"**\" typecheck",
     "lint": "bun --filter=\"**\" lint",
     "lint-ci": "bun --filter=\"**\" lint-ci",
@@ -45,7 +45,7 @@
     },
     "hooks": {
       "before:release": "bun i && bun mmkv build",
-      "before:git": "bun i && git add bun.lock && bun example bundle-install && bun example pods && git add example/ios/Podfile.lock"
+      "before:git": "bun i && git add bun.lock"
     },
     "plugins": {
       "@release-it/bumper": {

@@ -29,9 +29,12 @@ jobs:
         path:
         - 'packages/react-native-mmkv/android/src/main/cpp'
         - 'packages/react-native-mmkv/cpp'
-        - 'packages/react-native-mmkv/ios'
+        - 'packages/react-native-mmkv/apple'
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
       - uses: oven-sh/setup-bun@v2
 
       - name: Install npm dependencies (bun)

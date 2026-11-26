@@ -10,9 +10,9 @@ import {
   waitFor,
 } from '@testing-library/react-native'
 import { renderToString } from 'react-dom/server'
-import { createMMKV, useMMKVNumber, useMMKVString } from '..'
+import { MMKV, useMMKVBigInt, useMMKVNumber, useMMKVString } from '..'
 
-const mmkv = createMMKV()
+const mmkv = new MMKV()
 
 beforeEach(() => {
   mmkv.clearAll()
@@ -37,9 +37,25 @@ test('hooks update when the value is changed directly through the instance', () 
 
   // Now, make the change directly through the instance.
   act(() => {
-    mmkv.set('string-key', 'value 2')
+    mmkv.setString('string-key', 'value 2')
   })
   expect(result.current[0]).toStrictEqual('value 2')
+})
+
+test('useMMKVBigInt writes, updates, and removes signed 64-bit values', () => {
+  const key = 'bigint-key'
+  const { result } = renderHook(() => useMMKVBigInt(key, mmkv))
+
+  act(() => {
+    result.current[1](9007199254740993n)
+    result.current[1]((current) => current! + 1n)
+  })
+  expect(mmkv.getBigInt(key)).toBe(9007199254740994n)
+  expect(result.current[0]).toBe(9007199254740994n)
+
+  act(() => result.current[1](undefined))
+  expect(result.current[0]).toBeUndefined()
+  expect(mmkv.contains(key)).toBe(false)
 })
 
 test('functional updates to hooks', () => {
@@ -97,14 +113,14 @@ test('functional updates to hooks', () => {
 
 test('useMMKV hook does not miss updates that happen during subscription setup', async () => {
   const raceKey = 'race-key'
-  const raceMMKV = createMMKV()
+  const raceMMKV = new MMKV()
 
   let simulatedRaceDone = false
   const originalSubscribe = raceMMKV.addOnValueChangedListener.bind(raceMMKV)
   raceMMKV.addOnValueChangedListener = ((listener) => {
     if (!simulatedRaceDone) {
       simulatedRaceDone = true
-      raceMMKV.set(raceKey, 'updated-before-subscribe')
+      raceMMKV.setString(raceKey, 'updated-before-subscribe')
     }
     return originalSubscribe(listener)
   }) as typeof raceMMKV.addOnValueChangedListener
@@ -122,7 +138,7 @@ test('useMMKV hook stays consistent during rapid updates', async () => {
 
   act(() => {
     for (let i = 1; i <= 100; i++) {
-      mmkv.set(raceKey, i)
+      mmkv.setNumber(raceKey, i)
     }
   })
 
@@ -134,7 +150,7 @@ test('useMMKV hook stays consistent during rapid updates', async () => {
 test('hooks read as unset when rendered on the server', () => {
   // There's no storage on the server (on Web, reading it there throws), so a
   // server render reads every value as unset, even one that's stored.
-  mmkv.set('string-key', 'stored value')
+  mmkv.setString('string-key', 'stored value')
 
   const Component: React.FC = () => {
     const [value] = useMMKVString('string-key', mmkv)

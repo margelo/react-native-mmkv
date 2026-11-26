@@ -6,17 +6,17 @@ on:
       device_model:
         description: "iOS Simulator device model"
         required: false
-        default: "iPhone 17 Pro"
+        default: "iPhone 18 Pro"
         type: string
       ios_version:
         description: "iOS version"
         required: false
-        default: "26.5"
+        default: "27.2"
         type: string
       xcode_version:
         description: "Xcode version"
         required: false
-        default: "26.6.0"
+        default: "27.2"
         type: string
   push:
     branches:
@@ -25,10 +25,10 @@ on:
       - ".github/workflows/harness-ios.yml"
       - "example/ios/**"
       - "**/nitrogen/generated/shared/**"
-      - "**/nitrogen/generated/ios/**"
+      - "**/nitrogen/generated/apple/**"
       - "packages/react-native-mmkv/cpp/**"
-      - "packages/react-native-mmkv/ios/**"
-      - "**/Podfile.lock"
+      - "packages/react-native-mmkv/apple/**"
+      - "**/Package.swift"
       - "**/*.podspec"
       - "**/react-native.config.js"
       - "**/nitro.json"
@@ -39,10 +39,10 @@ on:
       - ".github/workflows/harness-ios.yml"
       - "example/ios/**"
       - "**/nitrogen/generated/shared/**"
-      - "**/nitrogen/generated/ios/**"
+      - "**/nitrogen/generated/apple/**"
       - "packages/react-native-mmkv/cpp/**"
-      - "packages/react-native-mmkv/ios/**"
-      - "**/Podfile.lock"
+      - "packages/react-native-mmkv/apple/**"
+      - "**/Package.swift"
       - "**/*.podspec"
       - "**/react-native.config.js"
       - "**/nitro.json"
@@ -51,52 +51,33 @@ on:
 
 env:
   # Device configuration - can be overridden by workflow_dispatch inputs
-  DEVICE_MODEL: ${{ github.event.inputs.device_model || 'iPhone 17 Pro' }}
-  IOS_VERSION: ${{ github.event.inputs.ios_version || '26.5' }}
-  XCODE_VERSION: ${{ github.event.inputs.xcode_version || '26.6.0' }}
-  USE_CCACHE: 1
-  DEVELOPER_DIR: /Applications/Xcode_${{ github.event.inputs.xcode_version || '26.6.0' }}.app/Contents/Developer
+  DEVICE_MODEL: ${{ github.event.inputs.device_model || 'iPhone 18 Pro' }}
+  IOS_VERSION: ${{ github.event.inputs.ios_version || '27.2' }}
+  DEVELOPER_DIR: /Applications/Xcode_${{ github.event.inputs.xcode_version || '27.2' }}.app/Contents/Developer
 
 jobs:
   harness_ios_new:
     name: Harness iOS (new architecture)
-    runs-on: macos-26
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
       - uses: oven-sh/setup-bun@v2
 
       - name: Install npm dependencies (bun)
         run: bun install
 
-      - name: Restore ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-
-      - name: Setup Ruby (bundle)
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.4.9
-          bundler-cache: true
-          working-directory: example
-
-      - name: Select Xcode ${{ env.XCODE_VERSION }}
-        run: sudo xcode-select -s "/Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer"
-
-      - name: Restore Pods cache
-        uses: actions/cache@v6
-        with:
-          path: example/ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock', '**/Gemfile.lock') }}
-
-      - name: Install Pods
+      - name: Resolve Swift packages
         working-directory: example
-        run: bun pods
+        run: bun spm
 
       - name: Build iOS app
         working-directory: example/ios
         run: "set -o pipefail && xcodebuild \
-          CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ \
-          -derivedDataPath build -UseModernBuildSystem=YES \
-          -workspace MmkvExample.xcworkspace \
+          -derivedDataPath build \
+          -project MmkvExample.xcodeproj \
           -scheme MmkvExample \
           -sdk iphonesimulator \
           -configuration Debug \

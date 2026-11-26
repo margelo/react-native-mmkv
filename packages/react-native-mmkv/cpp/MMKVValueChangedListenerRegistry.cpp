@@ -13,8 +13,7 @@ namespace margelo::nitro::mmkv {
 std::atomic<ListenerID> MMKVValueChangedListenerRegistry::_listenersCounter = 0;
 std::unordered_map<MMKVID, std::vector<ListenerSubscription>> MMKVValueChangedListenerRegistry::_listeners;
 
-ListenerID MMKVValueChangedListenerRegistry::addListener(const std::string& mmkvID,
-                                                         const std::function<void(const std::string& /* key */)>& callback) {
+ListenerID MMKVValueChangedListenerRegistry::addListener(const std::string& mmkvID, const Callback<void(const std::string&)>& callback) {
   // 1. Get (or create) the listeners array for these MMKV instances
   auto& listeners = _listeners[mmkvID];
   // 2. Get (and increment) the listener ID counter

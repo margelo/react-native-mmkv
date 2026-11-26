@@ -1,9 +1,18 @@
-import type { HybridObject } from 'react-native-nitro-modules'
+import { Android, Apple, type HybridObject } from 'nitro-core'
 
-export interface MMKVPlatformContext extends HybridObject<{
-  ios: 'swift'
-  android: 'kotlin'
-}> {
+export * from '#nitro/MMKVPlatformContext'
+
+@Apple({
+  language: 'swift',
+  implementation: { className: 'HybridMMKVPlatformContext' },
+})
+@Android({
+  language: 'kotlin',
+  implementation: { className: 'HybridMMKVPlatformContext' },
+})
+export declare class MMKVPlatformContext extends HybridObject {
+  constructor()
+
   /**
    * Get the MMKV base directory
    */

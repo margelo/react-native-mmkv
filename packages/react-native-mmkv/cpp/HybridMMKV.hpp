@@ -7,15 +7,17 @@
 
 #pragma once
 
-#include "Configuration.hpp"
-#include "HybridMMKVSpec.hpp"
 #include "MMKVTypes.hpp"
+#include <NitroMmkv/HybridMMKVSpec.hpp>
 
 namespace margelo::nitro::mmkv {
 
 class HybridMMKV final : public HybridMMKVSpec {
 public:
-  explicit HybridMMKV(const Configuration& configuration);
+  explicit HybridMMKV(const std::optional<Configuration>& configuration);
+  static void initialize(const std::string& rootPath);
+  static bool deleteStorage(const std::string& id);
+  static bool storageExists(const std::string& id);
 
 public:
   // Properties
@@ -28,27 +30,35 @@ public:
 
 public:
   // Methods
-  void set(const std::string& key, const std::variant<bool, std::shared_ptr<ArrayBuffer>, std::string, double>& value) override;
+  void setString(const std::string& key, const std::string& value) override;
+  void setBoolean(const std::string& key, bool value) override;
+  void setNumber(const std::string& key, double value) override;
+  void setArrayBuffer(const std::string& key, const ArrayBuffer& value) override;
+  void setBigInt(const std::string& key, int64_t value) override;
+  std::optional<int64_t> getBigInt(const std::string& key) override;
   std::optional<bool> getBoolean(const std::string& key) override;
   std::optional<std::string> getString(const std::string& key) override;
   std::optional<double> getNumber(const std::string& key) override;
-  std::optional<std::shared_ptr<ArrayBuffer>> getBuffer(const std::string& key) override;
+  std::optional<ArrayBuffer> getBuffer(const std::string& key) override;
   bool contains(const std::string& key) override;
   bool remove(const std::string& key) override;
   std::vector<std::string> getAllKeys() override;
   void clearAll() override;
   void recrypt(const std::optional<std::string>& key) override;
-  void encrypt(const std::string& key, std::optional<EncryptionType> encryptionType) override;
+  void encrypt(const std::string& key, const std::optional<EncryptionType>& encryptionType) override;
   void decrypt() override;
   void trim() override;
   void checkContentChanged() override;
-  Listener addOnValueChangedListener(const std::function<void(const std::string& /* key */)>& onValueChanged) override;
+  Listener addOnValueChangedListener(const Callback<void(const std::string&)>& onValueChanged) override;
   double importAllFrom(const std::shared_ptr<HybridMMKVSpec>& other) override;
 
 protected:
   size_t getExternalMemorySize() noexcept override;
 
 private:
+  template <typename Value>
+  void write(const std::string& key, Value&& value);
+
   static MMKVMode getMMKVMode(const Configuration& config);
   static std::optional<MMKVRecoverStrategic> getRecoveryStrategy(const Configuration& config);
 

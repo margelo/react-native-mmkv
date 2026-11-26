@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { MMKV } from '../specs/MMKV.nitro'
-import { getDefaultMMKVInstance } from '../createMMKV/getDefaultMMKVInstance'
+import { getDefaultMMKVInstance } from '../getDefaultMMKVInstance'
 import { useMMKVListener } from './useMMKVListener'
 
 /**

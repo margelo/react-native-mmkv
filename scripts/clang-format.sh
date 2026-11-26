@@ -6,7 +6,7 @@ CPP_DIRS=(
   # react-native-mmkv
   "packages/react-native-mmkv/android/src/main/cpp"
   "packages/react-native-mmkv/cpp"
-  "packages/react-native-mmkv/ios"
+  "packages/react-native-mmkv/apple"
 )
 
 if which clang-format >/dev/null; then

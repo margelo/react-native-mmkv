@@ -1,4 +1,4 @@
-#include "NitroMmkvOnLoad.hpp"
+#include <NitroMmkv/private/NitroMmkvOnLoad.hpp>
 #include <fbjni/fbjni.h>
 #include <jni.h>
 

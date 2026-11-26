@@ -1,4 +1,4 @@
-import { getMMKVFactory } from '../getMMKVFactory'
+import { getNativeMMKV, initializeMMKV } from '../getNativeMMKV'
 import { isTest } from '../isTest'
 
 export function deleteMMKV(id: string): boolean {
@@ -6,6 +6,6 @@ export function deleteMMKV(id: string): boolean {
     return true
   }
 
-  const factory = getMMKVFactory()
-  return factory.deleteMMKV(id)
+  initializeMMKV()
+  return getNativeMMKV().deleteStorage(id)
 }
