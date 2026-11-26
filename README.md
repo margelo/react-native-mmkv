@@ -131,10 +131,8 @@ The following values can be configured:
 storage.setString('user.name', 'Marc')
 storage.setNumber('user.age', 21)
 storage.setBoolean('is-mmkv-fast-asf', true)
-storage.setBigInt('user.accountId', 9007199254740993n)
+storage.setBigInt('user.account-id', 9007199254740993n)
 ```
-
-`setBigInt` accepts signed 64-bit integers from `-(2n ** 63n)` to `2n ** 63n - 1n`. Writes outside that range throw.
 
 ### Get
 
@@ -142,7 +140,7 @@ storage.setBigInt('user.accountId', 9007199254740993n)
 const username = storage.getString('user.name') // 'Marc'
 const age = storage.getNumber('user.age') // 21
 const isMmkvFastAsf = storage.getBoolean('is-mmkv-fast-asf') // true
-const accountId = storage.getBigInt('user.accountId') // 9007199254740993n
+const accountId = storage.getBigInt('user.account-id') // 9007199254740993n
 ```
 
 ### Hooks
@@ -151,7 +149,7 @@ const accountId = storage.getBigInt('user.accountId') // 9007199254740993n
 const [username, setUsername] = useMMKVString('user.name')
 const [age, setAge] = useMMKVNumber('user.age')
 const [isMmkvFastAsf, setIsMmkvFastAsf] = useMMKVBoolean('is-mmkv-fast-asf')
-const [accountId, setAccountId] = useMMKVBigInt('user.accountId')
+const [accountId, setAccountId] = useMMKVBigInt('user.account-id')
 ```
 
 ### Keys
@@ -161,7 +159,7 @@ const [accountId, setAccountId] = useMMKVBigInt('user.accountId')
 const hasUsername = storage.contains('user.name')
 
 // getting all keys
-const keys = storage.getAllKeys() // ['user.name', 'user.age', 'is-mmkv-fast-asf', 'user.accountId']
+const keys = storage.getAllKeys() // ['user.name', 'user.age', 'is-mmkv-fast-asf', 'user.account-id']
 
 // delete a specific key + value
 const wasRemoved = storage.remove('user.name')
