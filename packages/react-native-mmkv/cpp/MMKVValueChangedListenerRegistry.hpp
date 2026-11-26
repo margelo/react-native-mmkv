@@ -5,7 +5,9 @@
 //  Created by Marc Rousavy on 21.08.2025.
 //
 
-#include "MMKVTypes.hpp"
+#pragma once
+
+#include <NitroModules/Callback.hpp>
 #include <atomic>
 #include <unordered_map>
 
@@ -16,7 +18,7 @@ using MMKVID = std::string;
 
 struct ListenerSubscription {
   ListenerID id;
-  std::function<void(const std::string& /* key */)> callback;
+  Callback<void(const std::string&)> callback;
 };
 
 /**
@@ -29,7 +31,7 @@ public:
   ~MMKVValueChangedListenerRegistry() = delete;
 
 public:
-  static ListenerID addListener(const std::string& mmkvID, const std::function<void(const std::string& /* key */)>& callback);
+  static ListenerID addListener(const std::string& mmkvID, const Callback<void(const std::string&)>& callback);
   static void removeListener(const std::string& mmkvID, ListenerID id);
 
 public:

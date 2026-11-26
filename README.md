@@ -69,22 +69,19 @@
 ### React Native
 
 ```sh
-npm install react-native-mmkv react-native-nitro-modules
-cd ios && pod install
+npm install react-native-mmkv \
+  react-native-nitro-modules@1.0.0-alpha.nightly.138.g43e09c161101 \
+  nitro-core@1.0.0-alpha.nightly.138.g43e09c161101
+npx react-native spm
 ```
 
-### Expo
-
-```sh
-npx expo install react-native-mmkv react-native-nitro-modules
-npx expo prebuild
-```
+Native builds require React Native 0.88 or newer with the New Architecture. iOS builds use Swift Package Manager and Swift 6.4 or newer. To convert an existing CocoaPods app, run `npx react-native spm add --deintegrate`.
 
 ## Usage
 
 ### Create a new instance
 
-To create a new instance of the MMKV storage, use the `MMKV` constructor. It is recommended that you re-use this instance throughout your entire app instead of creating a new instance each time, so `export` the `storage` object.
+To create a new instance of the MMKV storage, use `createMMKV()`. It is recommended that you re-use this instance throughout your entire app instead of creating a new instance each time, so `export` the `storage` object.
 
 #### Default
 
@@ -255,7 +252,7 @@ const wasDeleted = deleteMMKV('my-instance')
 
 ### Log Level
 
-By default, MMKV logs at `Debug` level in debug builds and `Warning` level in release builds. You can override this at build time to control the verbosity of MMKV's native logs.
+By default, MMKV logs at `Debug` level in debug builds and `Error` level in release builds. You can override this at build time to control the verbosity of MMKV's native logs.
 
 | Value | Level |
 |-------|-------|
@@ -275,16 +272,10 @@ MMKV_logLevel=4
 
 #### iOS
 
-Set `$MMKVLogLevel` in your app's `ios/Podfile`, then run `pod install`:
-
-```ruby
-$MMKVLogLevel = 4
-```
-
-Or use an environment variable during `pod install`:
+Set `MMKV_LOG_LEVEL` in the environment that builds the Swift package:
 
 ```sh
-MMKV_LOG_LEVEL=4 pod install
+MMKV_LOG_LEVEL=4 xcodebuild -project MyApp.xcodeproj -scheme MyApp build
 ```
 
 ## Testing with Jest or Vitest
@@ -312,7 +303,6 @@ If a user chooses to disable LocalStorage in their browser, the library will aut
 
 ## Limitations
 
-- react-native-mmkv V4 requires react-native 0.76 or higher.
 - Since react-native-mmkv uses JSI for synchronous native method invocations, remote debugging (e.g. with Chrome) is no longer possible. Instead, you should use [Flipper](https://fbflipper.com) or [React DevTools](https://react.dev/learn/react-developer-tools).
 
 ## Integrations

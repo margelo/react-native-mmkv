@@ -5,7 +5,7 @@
   "main": "lib/index",
   "module": "lib/index",
   "types": "lib/index.d.ts",
-  "react-native": "src/index",
+  "react-native": "lib/index",
   "source": "src/index",
   "files": [
     "src",
@@ -17,18 +17,19 @@
     "android/fix-prefab.gradle",
     "android/CMakeLists.txt",
     "android/src",
-    "ios/**/*.h",
-    "ios/**/*.m",
-    "ios/**/*.mm",
-    "ios/**/*.cpp",
-    "ios/**/*.swift",
+    "apple/**/*.h",
+    "apple/**/*.m",
+    "apple/**/*.mm",
+    "apple/**/*.cpp",
+    "apple/**/*.swift",
     "cpp/**/*.h",
     "cpp/**/*.hpp",
     "cpp/**/*.cpp",
     "app.plugin.js",
     "nitro.json",
     "*.podspec",
-    "README.md"
+    "README.md",
+    "Package.swift"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -36,7 +37,7 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\" --fix && prettier --write \"**/*.{js,ts,tsx}\"",
     "lint-ci": "eslint \"**/*.{js,ts,tsx}\" --max-warnings=0 -f @jamesacarr/github-actions && prettier --check \"**/*.{js,ts,tsx}\"",
     "typescript": "tsc",
-    "specs": "tsc && nitrogen --logLevel=\"debug\"",
+    "specs": "nitrogen --logLevel=\"debug\" && tsc",
     "build": "tsc --noEmit false",
     "release": "release-it",
     "test": "jest"
@@ -67,21 +68,26 @@
     "@types/react-dom": "19.2.7",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
-    "nitrogen": "0.36.2",
+    "nitrogen": "1.0.0-alpha.nightly.138.g43e09c161101",
     "prettier": "^3.8.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.1",
-    "react-native-nitro-modules": "0.36.2",
-    "typescript": "^6.0.3"
+    "react-native-nitro-modules": "1.0.0-alpha.nightly.138.g43e09c161101",
+    "typescript": "^6.0.3",
+    "nitro-core": "1.0.0-alpha.nightly.138.g43e09c161101"
   },
   "peerDependencies": {
     "react": "*",
-    "react-native": "*",
-    "react-native-nitro-modules": "*"
+    "react-native": ">=0.88.0",
+    "react-native-nitro-modules": "1.0.0-alpha.nightly.138.g43e09c161101",
+    "nitro-core": "1.0.0-alpha.nightly.138.g43e09c161101"
   },
   "peerDependenciesMeta": {
     "react-native-nitro-modules": {
+      "optional": true
+    },
+    "nitro-core": {
       "optional": true
     }
   },
@@ -116,5 +122,14 @@
     "trailingComma": "es5",
     "useTabs": false,
     "semi": false
+  },
+  "imports": {
+    "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"
+  },
+  "swiftpmConfig": {
+    "name": "NitroMmkv",
+    "dependencies": [
+      "react-native-nitro-modules"
+    ]
   }
 }

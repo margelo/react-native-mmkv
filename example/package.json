@@ -12,9 +12,8 @@
     "test:harness": "react-native-harness",
     "web:proxy": "node ./scripts/web-proxy.mjs",
     "web:dev": "node ./scripts/web-dev.mjs",
-    "bundle-install": "bundle install",
-    "pods": "bundle install && cd ios && bundle exec pod install",
     "build:android-release": "cd android && ./gradlew assembleRelease --no-daemon",
+    "spm": "react-native spm",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -23,8 +22,9 @@
     "http-proxy": "^1.18.1",
     "react-dom": "19.3.0",
     "react-native-mmkv": "*",
-    "react-native-nitro-modules": "0.36.2",
-    "react-native-web": "~0.21.0"
+    "react-native-nitro-modules": "1.0.0-alpha.nightly.138.g43e09c161101",
+    "react-native-web": "~0.21.0",
+    "nitro-core": "1.0.0-alpha.nightly.138.g43e09c161101"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",

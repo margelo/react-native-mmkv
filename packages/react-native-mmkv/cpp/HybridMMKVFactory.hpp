@@ -7,14 +7,11 @@
 
 #pragma once
 
-#include "HybridMMKVFactorySpec.hpp"
+#include <NitroMmkv/HybridMMKVFactorySpec.hpp>
 
 namespace margelo::nitro::mmkv {
 
 class HybridMMKVFactory final : public HybridMMKVFactorySpec {
-public:
-  HybridMMKVFactory() : HybridObject(TAG) {}
-
 public:
   std::string getDefaultMMKVInstanceId() override;
   void initializeMMKV(const std::string& rootPath) override;

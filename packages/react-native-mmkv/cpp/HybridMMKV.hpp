@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "Configuration.hpp"
-#include "HybridMMKVSpec.hpp"
 #include "MMKVTypes.hpp"
+#include <NitroMmkv/Configuration.hpp>
+#include <NitroMmkv/HybridMMKVSpec.hpp>
 
 namespace margelo::nitro::mmkv {
 
@@ -19,6 +19,7 @@ public:
 
 public:
   // Properties
+  std::string getName() override;
   std::string getId() override;
   double getSize() override;
   double getByteSize() override;
@@ -28,21 +29,21 @@ public:
 
 public:
   // Methods
-  void set(const std::string& key, const std::variant<bool, std::shared_ptr<ArrayBuffer>, std::string, double>& value) override;
+  void set(const std::string& key, const std::variant<bool, ArrayBuffer, std::string, double>& value) override;
   std::optional<bool> getBoolean(const std::string& key) override;
   std::optional<std::string> getString(const std::string& key) override;
   std::optional<double> getNumber(const std::string& key) override;
-  std::optional<std::shared_ptr<ArrayBuffer>> getBuffer(const std::string& key) override;
+  std::optional<ArrayBuffer> getBuffer(const std::string& key) override;
   bool contains(const std::string& key) override;
   bool remove(const std::string& key) override;
   std::vector<std::string> getAllKeys() override;
   void clearAll() override;
   void recrypt(const std::optional<std::string>& key) override;
-  void encrypt(const std::string& key, std::optional<EncryptionType> encryptionType) override;
+  void encrypt(const std::string& key, const std::optional<EncryptionType>& encryptionType) override;
   void decrypt() override;
   void trim() override;
   void checkContentChanged() override;
-  Listener addOnValueChangedListener(const std::function<void(const std::string& /* key */)>& onValueChanged) override;
+  Listener addOnValueChangedListener(const Callback<void(const std::string&)>& onValueChanged) override;
   double importAllFrom(const std::shared_ptr<HybridMMKVSpec>& other) override;
 
 protected:

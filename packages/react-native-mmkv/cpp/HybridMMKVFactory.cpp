@@ -8,6 +8,7 @@
 #include "HybridMMKVFactory.hpp"
 #include "HybridMMKV.hpp"
 #include "MMKVTypes.hpp"
+#include <NitroModules/NitroLogger.hpp>
 
 namespace margelo::nitro::mmkv {
 
@@ -16,7 +17,7 @@ std::string HybridMMKVFactory::getDefaultMMKVInstanceId() {
 }
 
 void HybridMMKVFactory::initializeMMKV(const std::string& rootPath) {
-  Logger::log(LogLevel::Info, TAG, "Initializing MMKV with rootPath=%s", rootPath.c_str());
+  Logger::log(LogLevel::Info, "MMKVFactory", "Initializing MMKV with rootPath=%s", rootPath.c_str());
 
   MMKVLogLevel logLevel = static_cast<MMKVLogLevel>(MMKV_LOG_LEVEL);
   MMKV::initializeMMKV(rootPath, logLevel);

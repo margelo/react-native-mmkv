@@ -25,10 +25,10 @@ on:
       - ".github/workflows/harness-ios.yml"
       - "example/ios/**"
       - "**/nitrogen/generated/shared/**"
-      - "**/nitrogen/generated/ios/**"
+      - "**/nitrogen/generated/apple/**"
       - "packages/react-native-mmkv/cpp/**"
-      - "packages/react-native-mmkv/ios/**"
-      - "**/Podfile.lock"
+      - "packages/react-native-mmkv/apple/**"
+      - "**/Package.swift"
       - "**/*.podspec"
       - "**/react-native.config.js"
       - "**/nitro.json"
@@ -39,10 +39,10 @@ on:
       - ".github/workflows/harness-ios.yml"
       - "example/ios/**"
       - "**/nitrogen/generated/shared/**"
-      - "**/nitrogen/generated/ios/**"
+      - "**/nitrogen/generated/apple/**"
       - "packages/react-native-mmkv/cpp/**"
-      - "packages/react-native-mmkv/ios/**"
-      - "**/Podfile.lock"
+      - "packages/react-native-mmkv/apple/**"
+      - "**/Package.swift"
       - "**/*.podspec"
       - "**/react-native.config.js"
       - "**/nitro.json"
@@ -53,8 +53,6 @@ env:
   # Device configuration - can be overridden by workflow_dispatch inputs
   DEVICE_MODEL: ${{ github.event.inputs.device_model || 'iPhone 18 Pro' }}
   IOS_VERSION: ${{ github.event.inputs.ios_version || '27.2' }}
-  XCODE_VERSION: ${{ github.event.inputs.xcode_version || '27.2' }}
-  USE_CCACHE: 1
   DEVELOPER_DIR: /Applications/Xcode_${{ github.event.inputs.xcode_version || '27.2' }}.app/Contents/Developer
 
 jobs:
@@ -71,35 +69,15 @@ jobs:
       - name: Install npm dependencies (bun)
         run: bun install
 
-      - name: Restore ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-
-      - name: Setup Ruby (bundle)
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.4.9
-          bundler-cache: true
-          working-directory: example
-
-      - name: Select Xcode ${{ env.XCODE_VERSION }}
-        run: sudo xcode-select -s "/Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer"
-
-      - name: Restore Pods cache
-        uses: actions/cache@v6
-        with:
-          path: example/ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock', '**/Gemfile.lock') }}
-
-      - name: Install Pods
+      - name: Resolve Swift packages
         working-directory: example
-        run: bun pods
+        run: bun spm
 
       - name: Build iOS app
         working-directory: example/ios
         run: "set -o pipefail && xcodebuild \
-          CC=clang CPLUSPLUS=clang++ LD=clang LDPLUSPLUS=clang++ \
-          -derivedDataPath build -UseModernBuildSystem=YES \
-          -workspace MmkvExample.xcworkspace \
+          -derivedDataPath build \
+          -project MmkvExample.xcodeproj \
           -scheme MmkvExample \
           -sdk iphonesimulator \
           -configuration Debug \
