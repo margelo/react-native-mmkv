@@ -36,6 +36,7 @@ jobs:
         run: bun run build:android-release
 
       - name: Upload APK to Release
+        if: github.event_name == 'release'
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
