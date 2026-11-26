@@ -5,7 +5,7 @@ import {
   beforeEach,
   afterEach,
 } from 'react-native-harness';
-import { Platform } from 'react-native';
+import { DeviceEventEmitter, Platform } from 'react-native';
 import { MMKV, deleteMMKV, existsMMKV } from 'react-native-mmkv';
 
 const waitForNextTick = async () => {
@@ -50,6 +50,7 @@ describe('MMKV Core Functionality', () => {
       const min = -(2n ** 63n);
       const max = 2n ** 63n - 1n;
       expect(storage).toBeInstanceOf(MMKV);
+      expect(storage.constructor).toBe(MMKV);
       expect(storage.getBigInt('bigint')).toBeUndefined();
 
       storage.setBigInt('bigint', min);
@@ -1294,6 +1295,28 @@ describe('Deleting instances and checking if they exist', () => {
       expect(wasDeleted).toStrictEqual(true);
       const exists = existsMMKV(storage.id);
       expect(exists).toStrictEqual(false);
+    });
+
+    it('skips deleted storage during app state events', (context) => {
+      context.skip(
+        Platform.OS === 'web',
+        'AppState storage handling is native',
+      );
+      const id = 'some-instance';
+      const storage = new MMKV({ id });
+      const alias = new MMKV({ id });
+      storage.setString('before', 'deleted');
+      expect(deleteMMKV(id)).toBe(true);
+
+      DeviceEventEmitter.emit('appStateDidChange', { app_state: 'active' });
+      DeviceEventEmitter.emit('memoryWarning');
+      expect(alias).toBeInstanceOf(MMKV);
+
+      const reopened = new MMKV({ id });
+      reopened.setString('after', 'reopened');
+      DeviceEventEmitter.emit('appStateDidChange', { app_state: 'active' });
+      expect(reopened.getString('after')).toBe('reopened');
+      deleteMMKV(id);
     });
 
     it('should not delete', () => {

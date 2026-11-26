@@ -1,10 +1,10 @@
-import type { MMKV } from './specs/MMKV.nitro'
+import type { MMKV as MMKVSpec } from './specs/MMKV.nitro'
 import type { Configuration } from './specs/Configuration'
 import { checkBigIntRange } from './checkBigIntRange'
 
 type Value = string | boolean | number | ArrayBuffer | bigint
 
-export class MockMMKV implements MMKV {
+export class MMKV implements MMKVSpec {
   private readonly storage = new Map<string, Value>()
   private readonly listeners = new Set<(key: string) => void>()
 
@@ -122,7 +122,7 @@ export class MockMMKV implements MMKV {
 
   dispose(): void {}
 
-  equals(other: MMKV): boolean {
+  equals(other: MMKVSpec): boolean {
     return this === other
   }
 
@@ -137,13 +137,11 @@ export class MockMMKV implements MMKV {
     }
   }
 
-  importAllFrom(other: MMKV): number {
+  importAllFrom(other: MMKVSpec): number {
     let imported = 0
     for (const key of other.getAllKeys()) {
       const value =
-        other instanceof MockMMKV
-          ? other.storage.get(key)
-          : other.getBuffer(key)
+        other instanceof MMKV ? other.storage.get(key) : other.getBuffer(key)
       if (value !== undefined) {
         this.storage.set(key, value)
         imported++

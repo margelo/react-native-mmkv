@@ -1,5 +1,6 @@
 import { Android, Apple, type HybridObject, type Int64 } from 'nitro-core'
 import type { Configuration, EncryptionType } from './Configuration'
+import type { MMKVPlatformContext } from './MMKVPlatformContext.nitro'
 
 export * from '#nitro/MMKV'
 
@@ -19,7 +20,11 @@ export declare class MMKV extends HybridObject {
   constructor(configuration?: Configuration)
 
   /** @internal */
-  static initialize(rootPath: string): void
+  static initialize(context: MMKVPlatformContext): void
+  /** @internal */
+  static trimAll(): void
+  /** @internal */
+  static checkAllContentChanged(): void
   /** @internal */
   static deleteStorage(id: string): boolean
   /** @internal */

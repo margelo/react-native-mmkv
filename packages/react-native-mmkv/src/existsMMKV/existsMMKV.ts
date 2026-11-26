@@ -1,4 +1,4 @@
-import { getNativeMMKV, initializeMMKV } from '../getNativeMMKV'
+import { getNativeMMKV } from '../getNativeMMKV'
 import { isTest } from '../isTest'
 
 export function existsMMKV(id: string): boolean {
@@ -6,6 +6,5 @@ export function existsMMKV(id: string): boolean {
     return true
   }
 
-  initializeMMKV()
   return getNativeMMKV().storageExists(id)
 }

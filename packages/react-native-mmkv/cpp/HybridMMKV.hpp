@@ -8,6 +8,7 @@
 #pragma once
 
 #include "MMKVTypes.hpp"
+#include <NitroMmkv/HybridMMKVPlatformContextSpecCxx.hpp>
 #include <NitroMmkv/HybridMMKVSpec.hpp>
 
 namespace margelo::nitro::mmkv {
@@ -15,7 +16,11 @@ namespace margelo::nitro::mmkv {
 class HybridMMKV final : public HybridMMKVSpec {
 public:
   explicit HybridMMKV(const std::optional<Configuration>& configuration);
-  static void initialize(const std::string& rootPath);
+  ~HybridMMKV() override;
+
+  static void initialize(const HybridMMKVPlatformContextSpecCxx& context);
+  static void trimAll();
+  static void checkAllContentChanged();
   static bool deleteStorage(const std::string& id);
   static bool storageExists(const std::string& id);
 

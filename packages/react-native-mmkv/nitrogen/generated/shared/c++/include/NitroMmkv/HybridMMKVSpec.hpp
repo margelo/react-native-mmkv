@@ -20,6 +20,7 @@
 #include <memory>
 // Forward declaration of `HybridMMKVSpec` to properly resolve imports.
 namespace margelo::nitro::mmkv { class HybridMMKVSpec; }
+#include <NitroMmkv/HybridMMKVPlatformContextSpecCxx.hpp>
 #include <NitroMmkv/Configuration.hpp>
 
 namespace margelo::nitro::mmkv {

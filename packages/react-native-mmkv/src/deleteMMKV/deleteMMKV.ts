@@ -1,4 +1,4 @@
-import { getNativeMMKV, initializeMMKV } from '../getNativeMMKV'
+import { getNativeMMKV } from '../getNativeMMKV'
 import { isTest } from '../isTest'
 
 export function deleteMMKV(id: string): boolean {
@@ -6,6 +6,5 @@ export function deleteMMKV(id: string): boolean {
     return true
   }
 
-  initializeMMKV()
   return getNativeMMKV().deleteStorage(id)
 }

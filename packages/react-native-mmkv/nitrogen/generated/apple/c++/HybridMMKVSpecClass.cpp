@@ -15,6 +15,7 @@
 #include <NitroModules/Callback.hpp>
 #include <functional>
 #include <memory>
+#include <NitroMmkv/HybridMMKVPlatformContextSpecCxx.hpp>
 #include <NitroMmkv/Configuration.hpp>
 #include <utility>
 #include "HybridMMKV.hpp"
@@ -31,8 +32,16 @@ namespace margelo::nitro::mmkv {
         return std::make_shared<::margelo::nitro::mmkv::HybridMMKV>(std::forward<decltype(configuration)>(configuration));
       }
 
-      static void initialize(const std::string& rootPath) {
-        return ::margelo::nitro::mmkv::HybridMMKV::initialize(std::forward<decltype(rootPath)>(rootPath));
+      static void initialize(const HybridMMKVPlatformContextSpecCxx& context) {
+        return ::margelo::nitro::mmkv::HybridMMKV::initialize(std::forward<decltype(context)>(context));
+      }
+
+      static void trimAll() {
+        return ::margelo::nitro::mmkv::HybridMMKV::trimAll();
+      }
+
+      static void checkAllContentChanged() {
+        return ::margelo::nitro::mmkv::HybridMMKV::checkAllContentChanged();
       }
 
       static bool deleteStorage(const std::string& id) {
@@ -76,6 +85,8 @@ namespace margelo::nitro::mmkv {
       clazz.registerHybridMethod("importAllFrom", &HybridMMKVSpec::importAllFrom);
       clazz.registerHybridConstructor(&HybridMMKVSpecBindings::constructor);
       clazz.registerStaticHybridMethod("initialize", &HybridMMKVSpecBindings::initialize);
+      clazz.registerStaticHybridMethod("trimAll", &HybridMMKVSpecBindings::trimAll);
+      clazz.registerStaticHybridMethod("checkAllContentChanged", &HybridMMKVSpecBindings::checkAllContentChanged);
       clazz.registerStaticHybridMethod("deleteStorage", &HybridMMKVSpecBindings::deleteStorage);
       clazz.registerStaticHybridMethod("storageExists", &HybridMMKVSpecBindings::storageExists);
     });

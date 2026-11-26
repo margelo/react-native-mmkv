@@ -6,19 +6,50 @@
 //
 
 #include "HybridMMKV.hpp"
+#include "MMKVStorageRegistry.hpp"
 #include "MMKVTypes.hpp"
 #include "MMKVValueChangedListenerRegistry.hpp"
 #include <NitroModules/NitroLogger.hpp>
+#include <mutex>
 
 namespace margelo::nitro::mmkv {
 
-void HybridMMKV::initialize(const std::string& rootPath) {
-  Logger::log(LogLevel::Info, "MMKV", "Initializing MMKV with rootPath=%s", rootPath.c_str());
-  MMKV::initializeMMKV(rootPath, static_cast<MMKVLogLevel>(MMKV_LOG_LEVEL));
+namespace {
+
+  std::optional<HybridMMKVPlatformContextSpecCxx> platformContext;
+
+  const std::string& getAppGroupPath() {
+    static const std::string path = platformContext.value().getAppGroupDirectory().value_or("");
+    return path;
+  }
+
+  void trimStorage(MMKV& storage) {
+    storage.trim();
+    storage.clearMemoryCache();
+  }
+
+} // namespace
+
+void HybridMMKV::initialize(const HybridMMKVPlatformContextSpecCxx& context) {
+  static std::once_flag initialized;
+  std::call_once(initialized, [&] {
+    const auto rootPath = context.getBaseDirectory();
+    Logger::log(LogLevel::Info, "MMKV", "Initializing MMKV with rootPath=%s", rootPath.c_str());
+    MMKV::initializeMMKV(rootPath, static_cast<MMKVLogLevel>(MMKV_LOG_LEVEL));
+    platformContext = context;
+  });
+}
+
+void HybridMMKV::trimAll() {
+  MMKVStorageRegistry::forEach(trimStorage);
+}
+
+void HybridMMKV::checkAllContentChanged() {
+  MMKVStorageRegistry::forEach([](MMKV& storage) { storage.checkContentChanged(); });
 }
 
 bool HybridMMKV::deleteStorage(const std::string& id) {
-  return MMKV::removeStorage(id);
+  return MMKVStorageRegistry::remove(id);
 }
 
 bool HybridMMKV::storageExists(const std::string& id) {
@@ -37,8 +68,8 @@ HybridMMKV::HybridMMKV(const std::optional<Configuration>& configuration) {
   bool useAes256Encryption = config.encryptionType.value_or(EncryptionType::AES_128) == EncryptionType::AES_256;
   std::string encryptionKey = config.encryptionKey.value_or("");
   std::string* encryptionKeyPtr = encryptionKey.size() > 0 ? &encryptionKey : nullptr;
-  std::string rootPath = config.path.value_or("");
-  std::string* rootPathPtr = rootPath.size() > 0 ? &rootPath : nullptr;
+  const std::string& rootPath = config.path ? *config.path : getAppGroupPath();
+  const std::string* rootPathPtr = rootPath.empty() ? nullptr : &rootPath;
   bool compareBeforeSet = config.compareBeforeSet.value_or(false);
 
   MMKVConfig mmkvConfig{.mode = mmkvMode,
@@ -52,7 +83,7 @@ HybridMMKV::HybridMMKV(const std::optional<Configuration>& configuration) {
   Logger::log(LogLevel::Info, "MMKV", "Creating MMKV instance \"%s\"... (Path: %s, Encrypted: %s)", id.c_str(), rootPath.c_str(),
               hasEncryptionKey ? "true" : "false");
 
-  instance = MMKV::mmkvWithID(id, mmkvConfig);
+  instance = MMKVStorageRegistry::open(this, id, mmkvConfig);
 
   if (instance == nullptr) [[unlikely]] {
     // Check if instanceId is invalid
@@ -81,6 +112,10 @@ HybridMMKV::HybridMMKV(const std::optional<Configuration>& configuration) {
 
     throw std::runtime_error("Failed to create MMKV instance!");
   }
+}
+
+HybridMMKV::~HybridMMKV() {
+  MMKVStorageRegistry::forget(this);
 }
 
 std::string HybridMMKV::getId() {
@@ -245,8 +280,7 @@ void HybridMMKV::decrypt() {
 }
 
 void HybridMMKV::trim() {
-  instance->trim();
-  instance->clearMemoryCache();
+  trimStorage(*instance);
 }
 
 void HybridMMKV::checkContentChanged() {
