@@ -110,7 +110,7 @@ export declare class MMKV extends HybridObject {
    *
    * @default undefined
    */
-  getBuffer(key: string): ArrayBuffer | undefined
+  getArrayBuffer(key: string): ArrayBuffer | undefined
   /**
    * Checks whether the given `key` is being stored in this MMKV instance.
    */

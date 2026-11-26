@@ -215,7 +215,7 @@ std::optional<double> HybridMMKV::getNumber(const std::string& key) {
   }
 }
 
-std::optional<ArrayBuffer> HybridMMKV::getBuffer(const std::string& key) {
+std::optional<ArrayBuffer> HybridMMKV::getArrayBuffer(const std::string& key) {
   MMBuffer result;
   if (!instance->getBytes(key, result)) {
     return std::nullopt;

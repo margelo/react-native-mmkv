@@ -11,6 +11,6 @@ import { createMMKVHook } from './createMMKVHook'
  * ```
  */
 export const useMMKVBuffer = createMMKVHook(
-  (instance, key) => instance.getBuffer(key),
+  (instance, key) => instance.getArrayBuffer(key),
   (instance, key, value) => instance.setArrayBuffer(key, value)
 )

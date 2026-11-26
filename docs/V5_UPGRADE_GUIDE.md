@@ -26,7 +26,7 @@ Import `MMKV` and pass the existing configuration to its constructor.
 
 Use the same instance ID, path, and encryption settings to open your existing data.
 
-## Write values
+## Read and write values
 
 Replace each `set()` call with the setter for the value type.
 
@@ -37,4 +37,4 @@ Replace each `set()` call with the setter for the value type.
 | `storage.set(key, count)`   | `storage.setNumber(key, count)`       |
 | `storage.set(key, buffer)`  | `storage.setArrayBuffer(key, buffer)` |
 
-Read ArrayBuffers with `getBuffer()`. For signed 64-bit integers, use `setBigInt()` and `getBigInt()`.
+Replace `storage.getBuffer(key)` with `storage.getArrayBuffer(key)`. For signed 64-bit integers, use `setBigInt()` and `getBigInt()`.

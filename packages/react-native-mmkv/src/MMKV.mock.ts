@@ -86,7 +86,7 @@ export class MMKV implements MMKVSpec {
     return typeof result === 'boolean' ? result : undefined
   }
 
-  getBuffer(key: string): ArrayBuffer | undefined {
+  getArrayBuffer(key: string): ArrayBuffer | undefined {
     const result = this.storage.get(key)
     return result instanceof ArrayBuffer ? result : undefined
   }
@@ -141,7 +141,9 @@ export class MMKV implements MMKVSpec {
     let imported = 0
     for (const key of other.getAllKeys()) {
       const value =
-        other instanceof MMKV ? other.storage.get(key) : other.getBuffer(key)
+        other instanceof MMKV
+          ? other.storage.get(key)
+          : other.getArrayBuffer(key)
       if (value !== undefined) {
         this.storage.set(key, value)
         imported++

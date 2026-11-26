@@ -115,7 +115,7 @@ export class MMKV implements MMKVSpec {
     return value === undefined ? undefined : value === 'true'
   }
 
-  getBuffer(key: string): ArrayBuffer | undefined {
+  getArrayBuffer(key: string): ArrayBuffer | undefined {
     const value = this.getString(key)
     return value === undefined
       ? undefined

@@ -74,7 +74,7 @@ namespace margelo::nitro::mmkv {
       virtual std::optional<bool> getBoolean(const std::string& key) = 0;
       virtual std::optional<std::string> getString(const std::string& key) = 0;
       virtual std::optional<double> getNumber(const std::string& key) = 0;
-      virtual std::optional<ArrayBuffer> getBuffer(const std::string& key) = 0;
+      virtual std::optional<ArrayBuffer> getArrayBuffer(const std::string& key) = 0;
       virtual bool contains(const std::string& key) = 0;
       virtual bool remove(const std::string& key) = 0;
       virtual std::vector<std::string> getAllKeys() = 0;

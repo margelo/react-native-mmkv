@@ -208,7 +208,7 @@ dataWriter[1] = 100
 dataWriter[2] = 255
 storage.setArrayBuffer('someToken', buffer)
 
-const token = storage.getBuffer('someToken')
+const token = storage.getArrayBuffer('someToken')
 if (token) console.log(new Uint8Array(token)) // [1, 100, 255]
 ```
 

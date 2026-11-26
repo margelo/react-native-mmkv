@@ -131,7 +131,7 @@ describe('MMKV Core Functionality', () => {
       expect(storage.getString(nonExistentKey)).toBeUndefined();
       expect(storage.getNumber(nonExistentKey)).toBeUndefined();
       expect(storage.getBoolean(nonExistentKey)).toBeUndefined();
-      expect(storage.getBuffer(nonExistentKey)).toBeUndefined();
+      expect(storage.getArrayBuffer(nonExistentKey)).toBeUndefined();
       expect(storage.contains(nonExistentKey)).toBe(false);
     });
   });
@@ -253,7 +253,7 @@ describe('MMKV Core Functionality', () => {
 
       storage.setArrayBuffer(key, buffer);
 
-      const retrieved = storage.getBuffer(key);
+      const retrieved = storage.getArrayBuffer(key);
       expect(retrieved).toBeDefined();
       expect(retrieved!.byteLength).toStrictEqual(buffer.byteLength);
 
@@ -271,7 +271,7 @@ describe('MMKV Core Functionality', () => {
 
       storage.setArrayBuffer(key, emptyBuffer);
 
-      const retrieved = storage.getBuffer(key);
+      const retrieved = storage.getArrayBuffer(key);
       expect(retrieved).toBeDefined();
       expect(retrieved!.byteLength).toStrictEqual(0);
     });
@@ -292,7 +292,7 @@ describe('MMKV Core Functionality', () => {
 
       storage.setArrayBuffer(key, data.buffer);
 
-      const retrieved = storage.getBuffer(key);
+      const retrieved = storage.getArrayBuffer(key);
       expect(retrieved).toBeDefined();
       expect(retrieved!.byteLength).toStrictEqual(size);
 
@@ -317,9 +317,13 @@ describe('MMKV Core Functionality', () => {
       storage.setArrayBuffer('float32', float32Data.buffer);
       storage.setArrayBuffer('uint32', uint32Data.buffer);
 
-      const int16Retrieved = new Int16Array(storage.getBuffer('int16')!);
-      const float32Retrieved = new Float32Array(storage.getBuffer('float32')!);
-      const uint32Retrieved = new Uint32Array(storage.getBuffer('uint32')!);
+      const int16Retrieved = new Int16Array(storage.getArrayBuffer('int16')!);
+      const float32Retrieved = new Float32Array(
+        storage.getArrayBuffer('float32')!,
+      );
+      const uint32Retrieved = new Uint32Array(
+        storage.getArrayBuffer('uint32')!,
+      );
 
       expect(int16Retrieved).toEqual(int16Data);
       expect(float32Retrieved).toEqual(float32Data);
@@ -337,7 +341,7 @@ describe('MMKV Core Functionality', () => {
       storage.setArrayBuffer(key, data.buffer);
 
       // Buffer should be retrievable as buffer
-      expect(storage.getBuffer(key)).toBeDefined();
+      expect(storage.getArrayBuffer(key)).toBeDefined();
 
       // Other types may return interpreted values from the raw bytes
       // We just verify they don't crash
@@ -1046,7 +1050,7 @@ describe('MMKV Multi-Process Mode', () => {
     expect(storage.getString('str')).toStrictEqual('hello');
     expect(storage.getNumber('num')).toStrictEqual(3.14);
     expect(storage.getBoolean('bool')).toStrictEqual(true);
-    expect(new Uint8Array(storage.getBuffer('buf')!)).toEqual(
+    expect(new Uint8Array(storage.getArrayBuffer('buf')!)).toEqual(
       new Uint8Array([10, 20, 30]),
     );
   });

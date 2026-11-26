@@ -44,7 +44,7 @@ public:
   std::optional<bool> getBoolean(const std::string& key) override;
   std::optional<std::string> getString(const std::string& key) override;
   std::optional<double> getNumber(const std::string& key) override;
-  std::optional<ArrayBuffer> getBuffer(const std::string& key) override;
+  std::optional<ArrayBuffer> getArrayBuffer(const std::string& key) override;
   bool contains(const std::string& key) override;
   bool remove(const std::string& key) override;
   std::vector<std::string> getAllKeys() override;

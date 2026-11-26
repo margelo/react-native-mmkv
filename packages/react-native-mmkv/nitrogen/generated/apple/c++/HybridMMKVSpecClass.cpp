@@ -71,7 +71,7 @@ namespace margelo::nitro::mmkv {
       clazz.registerHybridMethod("getBoolean", &HybridMMKVSpec::getBoolean);
       clazz.registerHybridMethod("getString", &HybridMMKVSpec::getString);
       clazz.registerHybridMethod("getNumber", &HybridMMKVSpec::getNumber);
-      clazz.registerHybridMethod("getBuffer", &HybridMMKVSpec::getBuffer);
+      clazz.registerHybridMethod("getArrayBuffer", &HybridMMKVSpec::getArrayBuffer);
       clazz.registerHybridMethod("contains", &HybridMMKVSpec::contains);
       clazz.registerHybridMethod("remove", &HybridMMKVSpec::remove);
       clazz.registerHybridMethod("getAllKeys", &HybridMMKVSpec::getAllKeys);
