@@ -67,12 +67,12 @@
     "@types/react-dom": "19.2.7",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
-    "nitrogen": "0.35.9",
+    "nitrogen": "0.36.2",
     "prettier": "^3.8.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.1",
-    "react-native-nitro-modules": "0.35.9",
+    "react-native-nitro-modules": "0.36.2",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {

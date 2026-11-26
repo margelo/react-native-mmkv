@@ -24,7 +24,7 @@
     "http-proxy": "^1.18.1",
     "react-dom": "19.3.0",
     "react-native-mmkv": "*",
-    "react-native-nitro-modules": "0.35.9",
+    "react-native-nitro-modules": "0.36.2",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-web": "~0.21.0"
   },
