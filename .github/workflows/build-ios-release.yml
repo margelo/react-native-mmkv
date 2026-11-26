@@ -10,9 +10,12 @@ on:
 jobs:
   build_release:
     name: Build iOS Example App (release, new architecture)
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
       - uses: oven-sh/setup-bun@v2
 
       - name: Install npm dependencies (bun)
@@ -28,8 +31,8 @@ jobs:
           bundler-cache: true
           working-directory: example
 
-      - name: Select Xcode 16.4
-        run: sudo xcode-select -s "/Applications/Xcode_16.4.app/Contents/Developer"
+      - name: Select Xcode 26.6
+        run: sudo xcode-select -s "/Applications/Xcode_26.6.app/Contents/Developer"
 
       - name: Restore Pods cache
         uses: actions/cache@v6
