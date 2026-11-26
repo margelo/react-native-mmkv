@@ -1,5 +1,5 @@
-| **V4 Docs** | [old V3 Docs](./README_V3.md) |
-|:---|:---|
+| **V5 Docs** | [V4 Docs](https://github.com/margelo/react-native-mmkv/blob/v4.3.2/README.md) | [V3 Docs](./README_V3.md) |
+|:---|:---|:---|
 
 <a href="https://margelo.com">
   <picture>
@@ -35,7 +35,7 @@
 
 ## Features
 
-* **Get** and **set** strings, booleans, numbers and ArrayBuffers
+* **Get** and **set** strings, booleans, numbers, BigInts, and ArrayBuffers
 * **Fully synchronous** calls, no async/await, no Promises, no Bridge.
 * **Encryption** support (secure storage)
 * **Multiple instances** support (separate user-data with global data)
@@ -47,8 +47,7 @@
 * Easy to use **React Hooks** API
 
 > [!IMPORTANT]
-> - **You're looking at MMKV V4. If you're still on V3, check out the [V3 docs here](./README_V3.md)**!
-> - react-native-mmkv **V4** is now a [Nitro Module](https://nitro.margelo.com). See the [V4 Upgrade Guide](./docs/V4_UPGRADE_GUIDE.md) for more information.
+> If you're moving from V4 to V5, follow the [V5 Upgrade Guide](./docs/V5_UPGRADE_GUIDE.md).
 
 ## Benchmark
 
@@ -75,20 +74,9 @@ npm install react-native-mmkv \
 npx react-native spm
 ```
 
-Native builds require React Native 0.88 or newer with the New Architecture. iOS builds use Swift Package Manager and Swift 6.4 or newer. To convert an existing CocoaPods app, run `npx react-native spm add --deintegrate`.
+Native builds require React Native 0.88 or newer with the New Architecture. iOS builds use Swift Package Manager and Swift 6.4 or newer.
 
 ## Usage
-
-### Upgrade from V4
-
-Replace `createMMKV(config)` with `new MMKV(config)` and use the setter for each value type. The existing on-disk data can be opened with the same instance ID and configuration.
-
-| Previous call | New call |
-| --- | --- |
-| `storage.set(key, string)` | `storage.setString(key, string)` |
-| `storage.set(key, boolean)` | `storage.setBoolean(key, boolean)` |
-| `storage.set(key, number)` | `storage.setNumber(key, number)` |
-| `storage.set(key, buffer)` | `storage.setArrayBuffer(key, buffer)` |
 
 ### Create a new instance
 
@@ -143,7 +131,10 @@ The following values can be configured:
 storage.setString('user.name', 'Marc')
 storage.setNumber('user.age', 21)
 storage.setBoolean('is-mmkv-fast-asf', true)
+storage.setBigInt('user.accountId', 9007199254740993n)
 ```
+
+`setBigInt` accepts signed 64-bit integers from `-(2n ** 63n)` to `2n ** 63n - 1n`. Writes outside that range throw.
 
 ### Get
 
@@ -151,6 +142,7 @@ storage.setBoolean('is-mmkv-fast-asf', true)
 const username = storage.getString('user.name') // 'Marc'
 const age = storage.getNumber('user.age') // 21
 const isMmkvFastAsf = storage.getBoolean('is-mmkv-fast-asf') // true
+const accountId = storage.getBigInt('user.accountId') // 9007199254740993n
 ```
 
 ### Hooks
@@ -159,15 +151,7 @@ const isMmkvFastAsf = storage.getBoolean('is-mmkv-fast-asf') // true
 const [username, setUsername] = useMMKVString('user.name')
 const [age, setAge] = useMMKVNumber('user.age')
 const [isMmkvFastAsf, setIsMmkvFastAsf] = useMMKVBoolean('is-mmkv-fast-asf')
-```
-
-### BigInt
-
-`setBigInt` stores signed 64-bit integers from `-(2n ** 63n)` to `2n ** 63n - 1n`. Writes outside this range throw.
-
-```ts
-storage.setBigInt('timestamp', 9007199254740993n)
-const timestamp = storage.getBigInt('timestamp') // 9007199254740993n
+const [accountId, setAccountId] = useMMKVBigInt('user.accountId')
 ```
 
 ### Keys
@@ -177,7 +161,7 @@ const timestamp = storage.getBigInt('timestamp') // 9007199254740993n
 const hasUsername = storage.contains('user.name')
 
 // getting all keys
-const keys = storage.getAllKeys() // ['user.name', 'user.age', 'is-mmkv-fast-asf']
+const keys = storage.getAllKeys() // ['user.name', 'user.age', 'is-mmkv-fast-asf', 'user.accountId']
 
 // delete a specific key + value
 const wasRemoved = storage.remove('user.name')
