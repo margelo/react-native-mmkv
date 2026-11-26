@@ -5,8 +5,8 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "lint": "eslint \"**/*.{js,ts,tsx}\" --fix && prettier --write \"**/*.{js,ts,tsx}\"",
-    "lint-ci": "eslint \"**/*.{js,ts,tsx}\" --max-warnings=0 -f @jamesacarr/github-actions && prettier --check \"**/*.{js,ts,tsx}\"",
+    "lint": "eslint \"*.{js,ts,tsx}\" \"{__tests__,src}/**/*.{js,ts,tsx}\" --fix && prettier --write \"*.{js,ts,tsx}\" \"{__tests__,src}/**/*.{js,ts,tsx}\"",
+    "lint-ci": "eslint \"*.{js,ts,tsx}\" \"{__tests__,src}/**/*.{js,ts,tsx}\" --max-warnings=0 -f @jamesacarr/github-actions && prettier --check \"*.{js,ts,tsx}\" \"{__tests__,src}/**/*.{js,ts,tsx}\"",
     "start": "react-native start",
     "test": "jest",
     "test:harness": "react-native-harness",
@@ -18,14 +18,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@react-native/new-app-screen": "0.88.1",
     "react": "19.3.0",
     "react-native": "0.88.1",
     "http-proxy": "^1.18.1",
     "react-dom": "19.3.0",
     "react-native-mmkv": "*",
     "react-native-nitro-modules": "0.36.2",
-    "react-native-safe-area-context": "^5.8.0",
     "react-native-web": "~0.21.0"
   },
   "devDependencies": {

@@ -34,7 +34,7 @@ env:
 jobs:
   build:
     name: Build iOS Example App
-    runs-on: macos-26
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
@@ -55,8 +55,8 @@ jobs:
           bundler-cache: true
           working-directory: example
 
-      - name: Select Xcode 26.6
-        run: sudo xcode-select -s "/Applications/Xcode_26.6.app/Contents/Developer"
+      - name: Select Xcode 27.2
+        run: sudo xcode-select -s "/Applications/Xcode_27.2.app/Contents/Developer"
 
       - name: Restore Pods cache
         uses: actions/cache@v6
