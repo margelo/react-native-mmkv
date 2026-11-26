@@ -8,18 +8,19 @@
 #pragma once
 
 #include "MMKVTypes.hpp"
-#include <NitroMmkv/Configuration.hpp>
 #include <NitroMmkv/HybridMMKVSpec.hpp>
 
 namespace margelo::nitro::mmkv {
 
 class HybridMMKV final : public HybridMMKVSpec {
 public:
-  explicit HybridMMKV(const Configuration& configuration);
+  explicit HybridMMKV(const std::optional<Configuration>& configuration);
+  static void initialize(const std::string& rootPath);
+  static bool deleteStorage(const std::string& id);
+  static bool storageExists(const std::string& id);
 
 public:
   // Properties
-  std::string getName() override;
   std::string getId() override;
   double getSize() override;
   double getByteSize() override;
@@ -29,7 +30,12 @@ public:
 
 public:
   // Methods
-  void set(const std::string& key, const std::variant<bool, ArrayBuffer, std::string, double>& value) override;
+  void setString(const std::string& key, const std::string& value) override;
+  void setBoolean(const std::string& key, bool value) override;
+  void setNumber(const std::string& key, double value) override;
+  void setArrayBuffer(const std::string& key, const ArrayBuffer& value) override;
+  void setBigInt(const std::string& key, int64_t value) override;
+  std::optional<int64_t> getBigInt(const std::string& key) override;
   std::optional<bool> getBoolean(const std::string& key) override;
   std::optional<std::string> getString(const std::string& key) override;
   std::optional<double> getNumber(const std::string& key) override;
@@ -50,6 +56,9 @@ protected:
   size_t getExternalMemorySize() noexcept override;
 
 private:
+  template <typename Value>
+  void write(const std::string& key, Value&& value);
+
   static MMKVMode getMMKVMode(const Configuration& config);
   static std::optional<MMKVRecoverStrategic> getRecoveryStrategy(const Configuration& config);
 

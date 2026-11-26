@@ -12,13 +12,13 @@ yarn add @tanstack/query-async-storage-persister @tanstack/react-query-persist-c
 
 ```ts
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
-import { createMMKV } from "react-native-mmkv"
+import { MMKV } from "react-native-mmkv"
 
-const storage = createMMKV();
+const storage = new MMKV();
 
 const clientStorage = {
   setItem: (key, value) => {
-    storage.set(key, value);
+    storage.setString(key, value);
   },
   getItem: (key) => {
     const value = storage.getString(key);

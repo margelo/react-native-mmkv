@@ -10,6 +10,7 @@ import { createMMKVHook } from './createMMKVHook'
  * const [username, setUsername] = useMMKVString("user.name")
  * ```
  */
-export const useMMKVString = createMMKVHook((instance, key) =>
-  instance.getString(key)
+export const useMMKVString = createMMKVHook(
+  (instance, key) => instance.getString(key),
+  (instance, key, value) => instance.setString(key, value)
 )

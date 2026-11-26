@@ -17,7 +17,7 @@ const persistAtom = (key) => ({ setSelf, onSet }) => {
     if (isReset) {
       storage.remove(key);
     } else {
-      storage.set(key, JSON.stringify(newValue));
+      storage.setString(key, JSON.stringify(newValue));
     }
   });
 };

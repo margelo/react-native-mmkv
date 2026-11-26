@@ -19,7 +19,7 @@ namespace margelo::nitro {
   margelo::nitro::mmkv::Configuration JSIConverter<margelo::nitro::mmkv::Configuration>::fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
     jsi::Object obj = arg.asObject(runtime);
     return margelo::nitro::mmkv::Configuration(
-      JSIConverter<std::string>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "id"))),
+      JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "id"))),
       JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "path"))),
       JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "encryptionKey"))),
       JSIConverter<std::optional<margelo::nitro::mmkv::EncryptionType>>::fromJSI(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "encryptionType"))),
@@ -32,7 +32,7 @@ namespace margelo::nitro {
 
   jsi::Value JSIConverter<margelo::nitro::mmkv::Configuration>::toJSI(jsi::Runtime& runtime, const margelo::nitro::mmkv::Configuration& arg) {
     jsi::Object obj(runtime);
-    obj.setProperty(runtime, PropNameIDCache::get(runtime, "id"), JSIConverter<std::string>::toJSI(runtime, arg.id));
+    obj.setProperty(runtime, PropNameIDCache::get(runtime, "id"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.id));
     obj.setProperty(runtime, PropNameIDCache::get(runtime, "path"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.path));
     obj.setProperty(runtime, PropNameIDCache::get(runtime, "encryptionKey"), JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.encryptionKey));
     obj.setProperty(runtime, PropNameIDCache::get(runtime, "encryptionType"), JSIConverter<std::optional<margelo::nitro::mmkv::EncryptionType>>::toJSI(runtime, arg.encryptionType));
@@ -51,7 +51,7 @@ namespace margelo::nitro {
     if (!nitro::isPlainObject(runtime, obj)) {
       return false;
     }
-    if (!JSIConverter<std::string>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "id")))) return false;
+    if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "id")))) return false;
     if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "path")))) return false;
     if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "encryptionKey")))) return false;
     if (!JSIConverter<std::optional<margelo::nitro::mmkv::EncryptionType>>::canConvert(runtime, obj.getProperty(runtime, PropNameIDCache::get(runtime, "encryptionType")))) return false;

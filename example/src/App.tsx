@@ -10,13 +10,13 @@ import {
   useColorScheme,
 } from 'react-native';
 import {
-  createMMKV,
+  MMKV,
   useMMKVListener,
   useMMKVString,
   useMMKVKeys,
 } from 'react-native-mmkv';
 
-const storage = createMMKV();
+const storage = new MMKV();
 
 export default function App() {
   const [text, setText] = React.useState<string>('');
@@ -37,7 +37,7 @@ export default function App() {
     }
     try {
       console.log('setting...');
-      storage.set(key, text);
+      storage.setString(key, text);
       console.log('set.');
     } catch (e) {
       console.error('Error:', e);

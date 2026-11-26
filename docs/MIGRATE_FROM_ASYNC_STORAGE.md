@@ -11,9 +11,9 @@ Here's a migration script to copy all values from AsyncStorage to MMKV, and dele
 
 ```ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createMMKV } from 'react-native-mmkv';
+import { MMKV } from 'react-native-mmkv';
 
-export const storage = createMMKV();
+export const storage = new MMKV();
 
 // TODO: Remove `hasMigratedFromAsyncStorage` after a while (when everyone has migrated)
 export const hasMigratedFromAsyncStorage = storage.getBoolean(
@@ -33,9 +33,9 @@ export async function migrateFromAsyncStorage(): Promise<void> {
 
       if (value != null) {
         if (['true', 'false'].includes(value)) {
-          storage.set(key, value === 'true');
+          storage.setBoolean(key, value === 'true');
         } else {
-          storage.set(key, value);
+          storage.setString(key, value);
         }
 
         AsyncStorage.removeItem(key);
@@ -49,7 +49,7 @@ export async function migrateFromAsyncStorage(): Promise<void> {
     }
   }
 
-  storage.set('hasMigratedFromAsyncStorage', true);
+  storage.setBoolean('hasMigratedFromAsyncStorage', true);
 
   const end = global.performance.now();
   console.log(`Migrated from AsyncStorage -> MMKV in ${end - start}ms!`);

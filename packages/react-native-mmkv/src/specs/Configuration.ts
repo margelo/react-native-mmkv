@@ -1,8 +1,3 @@
-import { Android, Apple, type HybridObject } from 'nitro-core'
-
-export * from '#nitro/MMKVFactory'
-import type { MMKV } from './MMKV.nitro'
-
 /**
  * Configures the mode of the MMKV instance.
  * - `single-process`: The MMKV instance is only used from a single process (this app).
@@ -33,19 +28,19 @@ export interface Configuration {
    *
    * @example
    * ```ts
-   * const userStorage = createMMKV({ id: `user-${userId}-storage` })
-   * const globalStorage = createMMKV({ id: 'global-app-storage' })
+   * const userStorage = new MMKV({ id: `user-${userId}-storage` })
+   * const globalStorage = new MMKV({ id: 'global-app-storage' })
    * ```
    *
    * @default 'mmkv.default'
    */
-  id: string
+  id?: string
   /**
    * The MMKV instance's root path. By default, MMKV stores file inside `$(Documents)/mmkv/`. You can customize MMKV's root directory on MMKV initialization:
 
    * @example
    * ```ts
-   * const temporaryStorage = createMMKV({ path: '/tmp/' })
+   * const temporaryStorage = new MMKV({ path: '/tmp/' })
    * ```
    *
    * @note On iOS, if an `AppGroup` is set in `Info.plist` and `path` is `undefined`, MMKV will use the `AppGroup` directory.
@@ -62,7 +57,7 @@ export interface Configuration {
    *
    * @example
    * ```ts
-   * const secureStorage = createMMKV({ encryptionKey: 'my-encryption-key!' })
+   * const secureStorage = new MMKV({ encryptionKey: '0123456789abcdef' })
    * ```
    *
    * @default undefined
@@ -73,9 +68,9 @@ export interface Configuration {
    *
    * @example
    * ```ts
-   * const secureStorage = createMMKV({
+   * const secureStorage = new MMKV({
    *   id: 'secure-storage',
-   *   encryptionKey: 'my-encryption-key!',
+   *   encryptionKey: '0123456789abcdef0123456789abcdef',
    *   encryptionType: 'AES-256'
    * })
    * ```
@@ -109,51 +104,4 @@ export interface Configuration {
    * @default undefined
    */
   recoveryStrategy?: RecoveryStrategy
-}
-
-@Apple({
-  language: 'c++',
-  implementation: {
-    className: 'HybridMMKVFactory',
-    include: '"HybridMMKVFactory.hpp"',
-  },
-})
-@Android({
-  language: 'c++',
-  implementation: {
-    className: 'HybridMMKVFactory',
-    include: '"HybridMMKVFactory.hpp"',
-  },
-})
-export declare class MMKVFactory extends HybridObject {
-  constructor()
-
-  /**
-   * Initialize the MMKV library with the given root path.
-   * This has to be called once, before using {@linkcode createMMKV}.
-   */
-  initializeMMKV(rootPath: string): void
-
-  /**
-   * Create a new {@linkcode MMKV} instance with the given {@linkcode Configuration}
-   */
-  createMMKV(configuration: Configuration): MMKV
-
-  /**
-   * Deletes the MMKV instance with the
-   * given {@linkcode id}.
-   */
-  deleteMMKV(id: string): boolean
-
-  /**
-   * Returns `true` if an MMKV instance with the
-   * given {@linkcode id} exists, `false` otherwise.
-   */
-  existsMMKV(id: string): boolean
-
-  /**
-   * Get the default MMKV instance's ID.
-   * @default 'mmkv.default'
-   */
-  readonly defaultMMKVInstanceId: string
 }

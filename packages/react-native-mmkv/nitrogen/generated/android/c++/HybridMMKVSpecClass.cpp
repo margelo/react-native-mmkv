@@ -8,7 +8,6 @@
 #include <NitroMmkv/HybridMMKVSpec.hpp>
 #include <string>
 #include <NitroModules/ArrayBuffer.hpp>
-#include <variant>
 #include <optional>
 #include <vector>
 #include <NitroMmkv/EncryptionType.hpp>
@@ -16,22 +15,50 @@
 #include <NitroModules/Callback.hpp>
 #include <functional>
 #include <memory>
-
+#include <NitroMmkv/Configuration.hpp>
+#include <utility>
+#include "HybridMMKV.hpp"
+#include <memory>
+#include <type_traits>
 
 namespace margelo::nitro::mmkv {
 
+  namespace {
+    struct HybridMMKVSpecBindings final {
+      static std::shared_ptr<HybridMMKVSpec> constructor(const std::optional<Configuration>& configuration) {
+        static_assert(std::is_constructible_v<::margelo::nitro::mmkv::HybridMMKV, decltype(configuration)>,
+                      "MMKV: ::margelo::nitro::mmkv::HybridMMKV must implement the declared public constructor.");
+        return std::make_shared<::margelo::nitro::mmkv::HybridMMKV>(std::forward<decltype(configuration)>(configuration));
+      }
 
+      static void initialize(const std::string& rootPath) {
+        return ::margelo::nitro::mmkv::HybridMMKV::initialize(std::forward<decltype(rootPath)>(rootPath));
+      }
+
+      static bool deleteStorage(const std::string& id) {
+        return ::margelo::nitro::mmkv::HybridMMKV::deleteStorage(std::forward<decltype(id)>(id));
+      }
+
+      static bool storageExists(const std::string& id) {
+        return ::margelo::nitro::mmkv::HybridMMKV::storageExists(std::forward<decltype(id)>(id));
+      }
+    };
+  }
 
   const std::shared_ptr<const HybridClass>& HybridMMKVSpec::Class::get() {
     static const auto hybridClass = HybridClass::create<Class>([](HybridClass& clazz) {
-      clazz.registerHybridProperty("name", &HybridMMKVSpec::getName);
       clazz.registerHybridProperty("id", &HybridMMKVSpec::getId);
       clazz.registerHybridProperty("length", &HybridMMKVSpec::getLength);
       clazz.registerHybridProperty("size", &HybridMMKVSpec::getSize);
       clazz.registerHybridProperty("byteSize", &HybridMMKVSpec::getByteSize);
       clazz.registerHybridProperty("isReadOnly", &HybridMMKVSpec::getIsReadOnly);
       clazz.registerHybridProperty("isEncrypted", &HybridMMKVSpec::getIsEncrypted);
-      clazz.registerHybridMethod("set", &HybridMMKVSpec::set);
+      clazz.registerHybridMethod("setString", &HybridMMKVSpec::setString);
+      clazz.registerHybridMethod("setBoolean", &HybridMMKVSpec::setBoolean);
+      clazz.registerHybridMethod("setNumber", &HybridMMKVSpec::setNumber);
+      clazz.registerHybridMethod("setArrayBuffer", &HybridMMKVSpec::setArrayBuffer);
+      clazz.registerHybridMethod("setBigInt", &HybridMMKVSpec::setBigInt);
+      clazz.registerHybridMethod("getBigInt", &HybridMMKVSpec::getBigInt);
       clazz.registerHybridMethod("getBoolean", &HybridMMKVSpec::getBoolean);
       clazz.registerHybridMethod("getString", &HybridMMKVSpec::getString);
       clazz.registerHybridMethod("getNumber", &HybridMMKVSpec::getNumber);
@@ -47,6 +74,10 @@ namespace margelo::nitro::mmkv {
       clazz.registerHybridMethod("checkContentChanged", &HybridMMKVSpec::checkContentChanged);
       clazz.registerHybridMethod("addOnValueChangedListener", &HybridMMKVSpec::addOnValueChangedListener);
       clazz.registerHybridMethod("importAllFrom", &HybridMMKVSpec::importAllFrom);
+      clazz.registerHybridConstructor(&HybridMMKVSpecBindings::constructor);
+      clazz.registerStaticHybridMethod("initialize", &HybridMMKVSpecBindings::initialize);
+      clazz.registerStaticHybridMethod("deleteStorage", &HybridMMKVSpecBindings::deleteStorage);
+      clazz.registerStaticHybridMethod("storageExists", &HybridMMKVSpecBindings::storageExists);
     });
     return hybridClass;
   }

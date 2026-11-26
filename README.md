@@ -79,16 +79,27 @@ Native builds require React Native 0.88 or newer with the New Architecture. iOS 
 
 ## Usage
 
+### Upgrade from V4
+
+Replace `createMMKV(config)` with `new MMKV(config)` and use the setter for each value type. The existing on-disk data can be opened with the same instance ID and configuration.
+
+| Previous call | New call |
+| --- | --- |
+| `storage.set(key, string)` | `storage.setString(key, string)` |
+| `storage.set(key, boolean)` | `storage.setBoolean(key, boolean)` |
+| `storage.set(key, number)` | `storage.setNumber(key, number)` |
+| `storage.set(key, buffer)` | `storage.setArrayBuffer(key, buffer)` |
+
 ### Create a new instance
 
-To create a new instance of the MMKV storage, use `createMMKV()`. It is recommended that you re-use this instance throughout your entire app instead of creating a new instance each time, so `export` the `storage` object.
+To create a new instance of the MMKV storage, use the `MMKV` constructor. It is recommended that you re-use this instance throughout your entire app instead of creating a new instance each time, so `export` the `storage` object.
 
 #### Default
 
 ```ts
-import { createMMKV } from 'react-native-mmkv'
+import { MMKV } from 'react-native-mmkv'
 
-export const storage = createMMKV()
+export const storage = new MMKV()
 ```
 
 This creates a new storage instance using the default MMKV storage ID (`mmkv.default`).
@@ -101,9 +112,9 @@ See [Configuring App Groups](https://developer.apple.com/documentation/xcode/con
 #### Customize
 
 ```ts
-import { createMMKV } from 'react-native-mmkv'
+import { MMKV } from 'react-native-mmkv'
 
-export const storage = createMMKV({
+export const storage = new MMKV({
   id: `user-${userId}-storage`,
   path: `${USER_DIRECTORY}/storage`,
   encryptionKey: 'hunter2',
@@ -123,15 +134,15 @@ The following values can be configured:
 * `encryptionKey`: The MMKV instance's encryption/decryption key. By default, MMKV stores all key-values in plain text on file, relying on iOS's/Android's sandbox to make sure the file is encrypted. Should you worry about information leaking, you can choose to encrypt MMKV. (documentation: [iOS](https://github.com/Tencent/MMKV/wiki/iOS_advance#encryption) / [Android](https://github.com/Tencent/MMKV/wiki/android_advance#encryption))
 * `encryptionType`: The MMKV instance's encryption/decryption algorithm. By default, AES-128 encryption will be used, but you can switch to AES-256 for advanced security.
 * `mode`: The MMKV's process behaviour - when set to `multi-process`, the MMKV instance will assume data can be changed from the outside (e.g. App Clips, Extensions or App Groups).
-* `readOnly`: Whether this MMKV instance should be in read-only mode. This is typically more efficient and avoids unwanted writes to the data if not needed. Any call to `set(..)` will throw.
+* `readOnly`: Whether this MMKV instance should be in read-only mode. This is typically more efficient and avoids unwanted writes to the data if not needed. Writes throw when the instance is read-only.
 * `compareBeforeSet`: Whether this MMKV instance will compare values for equality before writing them to disk. By default this is disabled, enabling it might improve performance if values are repeatedly written to disk, even if they are already persisted.
 
 ### Set
 
 ```ts
-storage.set('user.name', 'Marc')
-storage.set('user.age', 21)
-storage.set('is-mmkv-fast-asf', true)
+storage.setString('user.name', 'Marc')
+storage.setNumber('user.age', 21)
+storage.setBoolean('is-mmkv-fast-asf', true)
 ```
 
 ### Get
@@ -148,6 +159,15 @@ const isMmkvFastAsf = storage.getBoolean('is-mmkv-fast-asf') // true
 const [username, setUsername] = useMMKVString('user.name')
 const [age, setAge] = useMMKVNumber('user.age')
 const [isMmkvFastAsf, setIsMmkvFastAsf] = useMMKVBoolean('is-mmkv-fast-asf')
+```
+
+### BigInt
+
+`setBigInt` stores signed 64-bit integers from `-(2n ** 63n)` to `2n ** 63n - 1n`. Writes outside this range throw.
+
+```ts
+storage.setBigInt('timestamp', 9007199254740993n)
+const timestamp = storage.getBigInt('timestamp') // 9007199254740993n
 ```
 
 ### Keys
@@ -175,7 +195,7 @@ const user = {
 }
 
 // Serialize the object into a JSON string
-storage.set('user', JSON.stringify(user))
+storage.setString('user', JSON.stringify(user))
 
 // Deserialize the JSON string into an object
 const jsonUser = storage.getString('user') // '{ "username": "Marc", "age": 21 }'
@@ -202,10 +222,10 @@ const dataWriter = new Uint8Array(buffer)
 dataWriter[0] = 1
 dataWriter[1] = 100
 dataWriter[2] = 255
-storage.set('someToken', buffer)
+storage.setArrayBuffer('someToken', buffer)
 
-const buffer = storage.getBuffer('someToken')
-console.log(buffer) // [1, 100, 255]
+const token = storage.getBuffer('someToken')
+if (token) console.log(new Uint8Array(token)) // [1, 100, 255]
 ```
 
 ### Size
@@ -224,8 +244,8 @@ if (size >= 4096) {
 To import all keys and values from another MMKV instance, use `importAllFrom(...)`:
 
 ```ts
-const storage = createMMKV(...)
-const otherStorage = createMMKV(...)
+const storage = new MMKV()
+const otherStorage = new MMKV({ id: 'other-storage' })
 
 const importedCount = storage.importAllFrom(otherStorage)
 ```
@@ -280,7 +300,7 @@ MMKV_LOG_LEVEL=4 xcodebuild -project MyApp.xcodeproj -scheme MyApp build
 
 ## Testing with Jest or Vitest
 
-A mocked MMKV instance is automatically used when testing with Jest or Vitest, so you will be able to use `createMMKV()` as per normal in your tests. Refer to [`example/__tests__/MMKV.harness.ts`](example/__tests__/MMKV.harness.ts) for an example using Jest.
+In Jest and Vitest, `new MMKV()` creates an in-memory mock. The [example Harness suite](example/__tests__/MMKV.harness.ts) tests the native and web implementations.
 
 ## Documentation
 

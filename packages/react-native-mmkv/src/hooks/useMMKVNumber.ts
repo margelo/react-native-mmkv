@@ -10,6 +10,7 @@ import { createMMKVHook } from './createMMKVHook'
  * const [age, setAge] = useMMKVNumber("user.age")
  * ```
  */
-export const useMMKVNumber = createMMKVHook((instance, key) =>
-  instance.getNumber(key)
+export const useMMKVNumber = createMMKVHook(
+  (instance, key) => instance.getNumber(key),
+  (instance, key, value) => instance.setNumber(key, value)
 )

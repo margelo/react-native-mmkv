@@ -11,7 +11,6 @@
 #include <NitroModules/HybridClass.hpp>
 #include <string>
 #include <NitroModules/ArrayBuffer.hpp>
-#include <variant>
 #include <optional>
 #include <vector>
 #include <NitroMmkv/EncryptionType.hpp>
@@ -21,6 +20,7 @@
 #include <memory>
 // Forward declaration of `HybridMMKVSpec` to properly resolve imports.
 namespace margelo::nitro::mmkv { class HybridMMKVSpec; }
+#include <NitroMmkv/Configuration.hpp>
 
 namespace margelo::nitro::mmkv {
 
@@ -55,7 +55,6 @@ namespace margelo::nitro::mmkv {
 
     public:
       // Properties
-      virtual std::string getName() = 0;
       virtual std::string getId() = 0;
       virtual double getLength() = 0;
       virtual double getSize() = 0;
@@ -65,7 +64,12 @@ namespace margelo::nitro::mmkv {
 
     public:
       // Methods
-      virtual void set(const std::string& key, const std::variant<bool, ArrayBuffer, std::string, double>& value) = 0;
+      virtual void setString(const std::string& key, const std::string& value) = 0;
+      virtual void setBoolean(const std::string& key, bool value) = 0;
+      virtual void setNumber(const std::string& key, double value) = 0;
+      virtual void setArrayBuffer(const std::string& key, const ArrayBuffer& value) = 0;
+      virtual void setBigInt(const std::string& key, int64_t value) = 0;
+      virtual std::optional<int64_t> getBigInt(const std::string& key) = 0;
       virtual std::optional<bool> getBoolean(const std::string& key) = 0;
       virtual std::optional<std::string> getString(const std::string& key) = 0;
       virtual std::optional<double> getNumber(const std::string& key) = 0;
