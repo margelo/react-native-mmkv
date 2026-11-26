@@ -31,7 +31,7 @@ export function createMockMMKV(
     isReadOnly: false,
     isEncrypted: false,
     clearAll: () => {
-      const keysBefore = storage.keys()
+      const keysBefore = Array.from(storage.keys())
       storage.clear()
       // Notify all listeners for all keys that were cleared
       for (const key of keysBefore) {
