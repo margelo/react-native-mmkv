@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <NitroModules/NitroDefines.hpp>
+
 // Platform-specific MMKV includes
 #ifdef __ANDROID__
 #include <MMKV/MMKV.h>

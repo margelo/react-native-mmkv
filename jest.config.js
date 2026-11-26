@@ -14,9 +14,6 @@ module.exports = {
       ],
       moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
       testPathIgnorePatterns: ['<rootDir>/packages/react-native-mmkv/lib/'],
-      moduleNameMapper: {
-        '^react-native-nitro-modules$': '<rootDir>/packages/react-native-mmkv/__mocks__/react-native-nitro-modules.js'
-      },
       collectCoverageFrom: [
         'packages/react-native-mmkv/src/**/*.{ts,tsx}',
         '!packages/react-native-mmkv/src/**/*.d.ts'

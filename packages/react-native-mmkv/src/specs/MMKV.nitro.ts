@@ -1,11 +1,24 @@
-import type { HybridObject } from 'react-native-nitro-modules'
+import { Android, Apple, type HybridObject } from 'nitro-core'
+
+export * from '#nitro/MMKV'
 import type { EncryptionType } from './MMKVFactory.nitro'
 
 export interface Listener {
   remove: () => void
 }
 
-export interface MMKV extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
+@Apple({
+  language: 'c++',
+  implementation: { className: 'HybridMMKV', include: '"HybridMMKV.hpp"' },
+})
+@Android({
+  language: 'c++',
+  implementation: { className: 'HybridMMKV', include: '"HybridMMKV.hpp"' },
+})
+export declare class MMKV extends HybridObject {
+  /** The name of this HybridObject. */
+  readonly name: string
+
   /**
    * Get the ID of this {@linkcode MMKV} instance.
    */

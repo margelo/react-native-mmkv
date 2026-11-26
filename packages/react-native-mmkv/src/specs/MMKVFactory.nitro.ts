@@ -1,4 +1,6 @@
-import type { HybridObject } from 'react-native-nitro-modules'
+import { Android, Apple, type HybridObject } from 'nitro-core'
+
+export * from '#nitro/MMKVFactory'
 import type { MMKV } from './MMKV.nitro'
 
 /**
@@ -109,10 +111,23 @@ export interface Configuration {
   recoveryStrategy?: RecoveryStrategy
 }
 
-export interface MMKVFactory extends HybridObject<{
-  ios: 'c++'
-  android: 'c++'
-}> {
+@Apple({
+  language: 'c++',
+  implementation: {
+    className: 'HybridMMKVFactory',
+    include: '"HybridMMKVFactory.hpp"',
+  },
+})
+@Android({
+  language: 'c++',
+  implementation: {
+    className: 'HybridMMKVFactory',
+    include: '"HybridMMKVFactory.hpp"',
+  },
+})
+export declare class MMKVFactory extends HybridObject {
+  constructor()
+
   /**
    * Initialize the MMKV library with the given root path.
    * This has to be called once, before using {@linkcode createMMKV}.
