@@ -19,16 +19,17 @@ export interface Listener {
 export declare class MMKV extends HybridObject {
   constructor(configuration?: Configuration)
 
+  /** Check whether storage with the given ID exists. */
+  static existsInstance(id: string): boolean
+  /** Delete the storage with the given ID. */
+  static deleteInstance(id: string): boolean
+
   /** @internal */
   static initialize(context: MMKVPlatformContext): void
   /** @internal */
   static trimAll(): void
   /** @internal */
   static checkAllContentChanged(): void
-  /** @internal */
-  static deleteStorage(id: string): boolean
-  /** @internal */
-  static storageExists(id: string): boolean
 
   /**
    * Get the ID of this {@linkcode MMKV} instance.

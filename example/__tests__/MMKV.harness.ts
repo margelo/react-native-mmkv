@@ -6,7 +6,7 @@ import {
   afterEach,
 } from 'react-native-harness';
 import { DeviceEventEmitter, Platform } from 'react-native';
-import { MMKV, deleteMMKV, existsMMKV } from 'react-native-mmkv';
+import { MMKV } from 'react-native-mmkv';
 
 const waitForNextTick = async () => {
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -1257,23 +1257,23 @@ describe('MMKV Listeners & Observers', () => {
 
 describe('Deleting instances and checking if they exist', () => {
   beforeEach(() => {
-    deleteMMKV('some-instance');
-    deleteMMKV('some-non-existing-instance');
+    MMKV.deleteInstance('some-instance');
+    MMKV.deleteInstance('some-non-existing-instance');
   });
 
   describe('Checking if an instance exists', () => {
     it('should exist', (context) => {
       context.skip(
         Platform.OS === 'web',
-        'existsMMKV cannot detect a freshly-created empty instance on Web',
+        'existsInstance cannot detect a freshly-created empty instance on Web',
       );
       const storage = new MMKV({ id: 'some-instance' });
-      const exists = existsMMKV(storage.id);
+      const exists = MMKV.existsInstance(storage.id);
       expect(exists).toStrictEqual(true);
     });
 
     it('should not exist', () => {
-      const exists = existsMMKV('some-non-existing-instance');
+      const exists = MMKV.existsInstance('some-non-existing-instance');
       expect(exists).toStrictEqual(false);
     });
   });
@@ -1282,23 +1282,21 @@ describe('Deleting instances and checking if they exist', () => {
     it('should delete properly', (context) => {
       context.skip(
         Platform.OS === 'web',
-        'deleteMMKV cannot remove a freshly-created empty instance on Web',
+        'deleteInstance cannot remove a freshly-created empty instance on Web',
       );
       const storage = new MMKV({ id: 'some-instance' });
-      const wasDeleted = deleteMMKV(storage.id);
+      const wasDeleted = MMKV.deleteInstance(storage.id);
       expect(wasDeleted).toStrictEqual(true);
     });
 
-    it('should delete properly and exists should be false', (context) => {
-      context.skip(
-        Platform.OS === 'web',
-        'existsMMKV/deleteMMKV semantics differ on Web',
-      );
-      const storage = new MMKV({ id: 'some-instance' });
-      const wasDeleted = deleteMMKV(storage.id);
-      expect(wasDeleted).toStrictEqual(true);
-      const exists = existsMMKV(storage.id);
-      expect(exists).toStrictEqual(false);
+    it('checks and deletes an instance with stored values', () => {
+      const id = 'some-instance';
+      const storage = new MMKV({ id });
+      storage.setString('key', 'value');
+
+      expect(MMKV.existsInstance(id)).toBe(true);
+      expect(MMKV.deleteInstance(id)).toBe(true);
+      expect(MMKV.existsInstance(id)).toBe(false);
     });
 
     it('skips deleted storage during app state events', (context) => {
@@ -1310,7 +1308,7 @@ describe('Deleting instances and checking if they exist', () => {
       const storage = new MMKV({ id });
       const alias = new MMKV({ id });
       storage.setString('before', 'deleted');
-      expect(deleteMMKV(id)).toBe(true);
+      expect(MMKV.deleteInstance(id)).toBe(true);
 
       DeviceEventEmitter.emit('appStateDidChange', { app_state: 'active' });
       DeviceEventEmitter.emit('memoryWarning');
@@ -1320,11 +1318,11 @@ describe('Deleting instances and checking if they exist', () => {
       reopened.setString('after', 'reopened');
       DeviceEventEmitter.emit('appStateDidChange', { app_state: 'active' });
       expect(reopened.getString('after')).toBe('reopened');
-      deleteMMKV(id);
+      MMKV.deleteInstance(id);
     });
 
     it('should not delete', () => {
-      const wasDeleted = deleteMMKV('some-non-existing-instance');
+      const wasDeleted = MMKV.deleteInstance('some-non-existing-instance');
       expect(wasDeleted).toStrictEqual(false);
     });
   });

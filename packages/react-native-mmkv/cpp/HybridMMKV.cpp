@@ -48,11 +48,11 @@ void HybridMMKV::checkAllContentChanged() {
   MMKVStorageRegistry::forEach([](MMKV& storage) { storage.checkContentChanged(); });
 }
 
-bool HybridMMKV::deleteStorage(const std::string& id) {
+bool HybridMMKV::deleteInstance(const std::string& id) {
   return MMKVStorageRegistry::remove(id);
 }
 
-bool HybridMMKV::storageExists(const std::string& id) {
+bool HybridMMKV::existsInstance(const std::string& id) {
   return MMKV::checkExist(id);
 }
 

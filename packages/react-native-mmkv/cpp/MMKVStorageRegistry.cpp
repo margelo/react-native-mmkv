@@ -12,7 +12,7 @@ namespace {
   };
 
   // MMKV owns the pointers. Serialize opening and deleting storage with app lifecycle
-  // operations so those operations never use a pointer invalidated by deleteMMKV().
+  // operations so those operations never use a pointer invalidated by MMKV.deleteInstance().
   std::mutex storageMutex;
   std::unordered_map<const HybridMMKV*, Storage> openStorages;
 

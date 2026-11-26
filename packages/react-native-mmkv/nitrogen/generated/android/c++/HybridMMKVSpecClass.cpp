@@ -32,6 +32,14 @@ namespace margelo::nitro::mmkv {
         return std::make_shared<::margelo::nitro::mmkv::HybridMMKV>(std::forward<decltype(configuration)>(configuration));
       }
 
+      static bool existsInstance(const std::string& id) {
+        return ::margelo::nitro::mmkv::HybridMMKV::existsInstance(std::forward<decltype(id)>(id));
+      }
+
+      static bool deleteInstance(const std::string& id) {
+        return ::margelo::nitro::mmkv::HybridMMKV::deleteInstance(std::forward<decltype(id)>(id));
+      }
+
       static void initialize(const HybridMMKVPlatformContextSpecCxx& context) {
         return ::margelo::nitro::mmkv::HybridMMKV::initialize(std::forward<decltype(context)>(context));
       }
@@ -42,14 +50,6 @@ namespace margelo::nitro::mmkv {
 
       static void checkAllContentChanged() {
         return ::margelo::nitro::mmkv::HybridMMKV::checkAllContentChanged();
-      }
-
-      static bool deleteStorage(const std::string& id) {
-        return ::margelo::nitro::mmkv::HybridMMKV::deleteStorage(std::forward<decltype(id)>(id));
-      }
-
-      static bool storageExists(const std::string& id) {
-        return ::margelo::nitro::mmkv::HybridMMKV::storageExists(std::forward<decltype(id)>(id));
       }
     };
   }
@@ -84,11 +84,11 @@ namespace margelo::nitro::mmkv {
       clazz.registerHybridMethod("addOnValueChangedListener", &HybridMMKVSpec::addOnValueChangedListener);
       clazz.registerHybridMethod("importAllFrom", &HybridMMKVSpec::importAllFrom);
       clazz.registerHybridConstructor(&HybridMMKVSpecBindings::constructor);
+      clazz.registerStaticHybridMethod("existsInstance", &HybridMMKVSpecBindings::existsInstance);
+      clazz.registerStaticHybridMethod("deleteInstance", &HybridMMKVSpecBindings::deleteInstance);
       clazz.registerStaticHybridMethod("initialize", &HybridMMKVSpecBindings::initialize);
       clazz.registerStaticHybridMethod("trimAll", &HybridMMKVSpecBindings::trimAll);
       clazz.registerStaticHybridMethod("checkAllContentChanged", &HybridMMKVSpecBindings::checkAllContentChanged);
-      clazz.registerStaticHybridMethod("deleteStorage", &HybridMMKVSpecBindings::deleteStorage);
-      clazz.registerStaticHybridMethod("storageExists", &HybridMMKVSpecBindings::storageExists);
     });
     return hybridClass;
   }

@@ -234,24 +234,13 @@ const otherStorage = new MMKV({ id: 'other-storage' })
 const importedCount = storage.importAllFrom(otherStorage)
 ```
 
-### Check if an MMKV instance exists
-
-To check if an MMKV instance exists, use `existsMMKV(...)`:
+### Check or delete an instance
 
 ```ts
-import { existsMMKV } from 'react-native-mmkv'
+import { MMKV } from 'react-native-mmkv'
 
-const exists = existsMMKV('my-instance')
-```
-
-### Delete an MMKV instance
-
-To delete an MMKV instance, use `deleteMMKV(...)`:
-
-```ts
-import { deleteMMKV } from 'react-native-mmkv'
-
-const wasDeleted = deleteMMKV('my-instance')
+const exists = MMKV.existsInstance('my-instance')
+const wasDeleted = MMKV.deleteInstance('my-instance')
 ```
 
 ### Log Level
@@ -284,7 +273,32 @@ MMKV_LOG_LEVEL=4 xcodebuild -project MyApp.xcodeproj -scheme MyApp build
 
 ## Testing with Jest or Vitest
 
-In Jest and Vitest, `new MMKV()` creates an in-memory mock. The [example Harness suite](example/__tests__/MMKV.harness.ts) tests the native and web implementations.
+Select the in-memory implementation with the `react-native-mmkv-mock` resolver condition.
+
+In Jest, add it to your Jest config.
+
+```js
+module.exports = {
+  testEnvironmentOptions: {
+    customExportConditions: ['react-native', 'react-native-mmkv-mock'],
+  },
+}
+```
+
+In Vitest's Node environment, inline MMKV and add the condition to the SSR resolver.
+
+```ts
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  ssr: {
+    noExternal: ['react-native-mmkv'],
+    resolve: { conditions: ['node', 'react-native-mmkv-mock'] },
+  },
+})
+```
+
+The [example Harness suite](example/__tests__/MMKV.harness.ts) tests the native and web implementations.
 
 ## Documentation
 

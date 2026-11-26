@@ -12,6 +12,14 @@ export class MMKV implements MMKVSpec {
   readonly isReadOnly = false
   readonly isEncrypted = false
 
+  static existsInstance(_id: string): boolean {
+    return true
+  }
+
+  static deleteInstance(_id: string): boolean {
+    return true
+  }
+
   constructor(config?: Configuration) {
     this.id = config?.id ?? 'mmkv.default'
   }

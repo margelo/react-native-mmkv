@@ -6,6 +6,9 @@ module.exports = {
       displayName: 'react-native-mmkv',
       testMatch: ['<rootDir>/packages/react-native-mmkv/src/**/__tests__/**/*.(ts|tsx|js)', '<rootDir>/packages/react-native-mmkv/src/**/*.(test|spec).(ts|tsx|js)'],
       preset: '@react-native/jest-preset',
+      testEnvironmentOptions: {
+        customExportConditions: ['react-native', 'react-native-mmkv-mock']
+      },
       transform: {
         '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest'
       },

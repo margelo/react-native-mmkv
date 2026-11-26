@@ -124,7 +124,14 @@
     "semi": false
   },
   "imports": {
-    "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs"
+    "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs",
+    "#react-native-mmkv": {
+      "types": "./lib/MMKV.native.d.ts",
+      "react-native-mmkv-mock": "./lib/MMKV.mock.js",
+      "browser": "./lib/MMKV.web.js",
+      "react-native": "./lib/MMKV.native.js",
+      "default": "./lib/MMKV.web.js"
+    }
   },
   "swiftpmConfig": {
     "name": "NitroMmkv",

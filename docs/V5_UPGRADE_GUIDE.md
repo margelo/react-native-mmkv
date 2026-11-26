@@ -26,7 +26,7 @@ Import `MMKV` and pass the existing configuration to its constructor.
 
 Use the same instance ID, path, and encryption settings to open your existing data.
 
-## Read and write values
+## Set
 
 Replace each `set()` call with the setter for the value type.
 
@@ -37,4 +37,19 @@ Replace each `set()` call with the setter for the value type.
 | `storage.set(key, count)`   | `storage.setNumber(key, count)`       |
 | `storage.set(key, buffer)`  | `storage.setArrayBuffer(key, buffer)` |
 
-Replace `storage.getBuffer(key)` with `storage.getArrayBuffer(key)`. For signed 64-bit integers, use `setBigInt()` and `getBigInt()`.
+Use `storage.setBigInt(key, value)` to store signed 64-bit integers.
+
+## Get
+
+Replace `storage.getBuffer(key)` with `storage.getArrayBuffer(key)`. Use `storage.getBigInt(key)` to read signed 64-bit integers.
+
+## Check or delete an instance
+
+| V4               | V5                        |
+| ---------------- | ------------------------- |
+| `existsMMKV(id)` | `MMKV.existsInstance(id)` |
+| `deleteMMKV(id)` | `MMKV.deleteInstance(id)` |
+
+## Testing
+
+Configure your test runner to use the in-memory implementation. See the [Jest and Vitest setup](../README.md#testing-with-jest-or-vitest).

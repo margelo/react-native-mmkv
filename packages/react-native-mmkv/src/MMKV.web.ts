@@ -18,6 +18,29 @@ export class MMKV implements MMKVSpec {
   readonly isReadOnly = false
   readonly isEncrypted = false
 
+  static existsInstance(id: string): boolean {
+    const storage = getLocalStorage()
+    const prefix = id + LOCAL_STORAGE_KEY_WILDCARD
+    const keys = Object.keys(storage)
+    return keys.some((k) => k.startsWith(prefix))
+  }
+
+  static deleteInstance(id: string): boolean {
+    const storage = getLocalStorage()
+    const prefix = id + LOCAL_STORAGE_KEY_WILDCARD
+    let wasRemoved = false
+
+    const keys = Object.keys(storage)
+    for (const key of keys) {
+      if (key.startsWith(prefix)) {
+        storage.removeItem(key)
+        wasRemoved = true
+      }
+    }
+
+    return wasRemoved
+  }
+
   constructor(config?: Configuration) {
     if (config?.encryptionKey != null) {
       throw new Error("MMKV: 'encryptionKey' is not supported on Web!")

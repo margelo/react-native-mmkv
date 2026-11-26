@@ -1,3 +1,6 @@
+import { MMKV as PlatformMMKV } from '#react-native-mmkv'
+import type { MMKV as MMKVSpec } from './specs/MMKV.nitro'
+
 // All types
 export type {
   Configuration,
@@ -6,11 +9,8 @@ export type {
   RecoveryStrategy,
 } from './specs/Configuration'
 
-export { MMKV } from './MMKV'
-
-// Exists + Delete
-export { existsMMKV } from './existsMMKV/existsMMKV'
-export { deleteMMKV } from './deleteMMKV/deleteMMKV'
+export type MMKV = MMKVSpec
+export const MMKV: typeof MMKVSpec = PlatformMMKV
 
 // All the hooks
 export { useMMKV } from './hooks/useMMKV'

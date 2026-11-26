@@ -1,6 +1,7 @@
 import { useRef } from 'react'
-import { MMKV } from '../MMKV'
+import { MMKV as MMKVConstructor } from '#react-native-mmkv'
 import type { Configuration } from '../specs/Configuration'
+import type { MMKV } from '../specs/MMKV.nitro'
 import { getDefaultMMKVInstance } from '../getDefaultMMKVInstance'
 
 function isConfigurationEqual(
@@ -41,7 +42,7 @@ export function useMMKV(configuration?: Configuration): MMKV {
     !isConfigurationEqual(lastConfiguration.current, configuration)
   ) {
     lastConfiguration.current = configuration
-    instance.current = new MMKV(configuration)
+    instance.current = new MMKVConstructor(configuration)
   }
 
   return instance.current

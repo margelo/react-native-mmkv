@@ -21,8 +21,8 @@ public:
   static void initialize(const HybridMMKVPlatformContextSpecCxx& context);
   static void trimAll();
   static void checkAllContentChanged();
-  static bool deleteStorage(const std::string& id);
-  static bool storageExists(const std::string& id);
+  static bool deleteInstance(const std::string& id);
+  static bool existsInstance(const std::string& id);
 
 public:
   // Properties
