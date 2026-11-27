@@ -7,10 +7,12 @@ on:
     paths:
       - '.github/workflows/test-js.yml'
       - 'packages/react-native-mmkv/**'
+      - 'packages/nitro-mmkv/**'
   pull_request:
     paths:
       - '.github/workflows/test-js.yml'
       - 'packages/react-native-mmkv/**'
+      - 'packages/nitro-mmkv/**'
 
 jobs:
   test:

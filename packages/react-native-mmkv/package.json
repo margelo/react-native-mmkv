@@ -9,27 +9,18 @@
   "source": "src/index",
   "files": [
     "src",
-    "react-native.config.js",
     "lib",
-    "nitrogen",
+    "react-native.config.js",
+    "Package.swift",
+    "*.podspec",
+    "apple",
     "android/build.gradle",
     "android/gradle.properties",
     "android/fix-prefab.gradle",
     "android/CMakeLists.txt",
     "android/src",
-    "apple/**/*.h",
-    "apple/**/*.m",
-    "apple/**/*.mm",
-    "apple/**/*.cpp",
-    "apple/**/*.swift",
-    "cpp/**/*.h",
-    "cpp/**/*.hpp",
-    "cpp/**/*.cpp",
-    "app.plugin.js",
-    "nitro.json",
-    "*.podspec",
-    "README.md",
-    "Package.swift"
+    "nitrogen",
+    "nitro.json"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -39,7 +30,6 @@
     "typescript": "tsc",
     "specs": "nitrogen --logLevel=\"debug\" && tsc",
     "build": "tsc --noEmit false",
-    "release": "release-it",
     "test": "jest"
   },
   "keywords": [
@@ -48,7 +38,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/margelo/react-native-mmkv.git"
+    "url": "git+https://github.com/margelo/react-native-mmkv.git",
+    "directory": "packages/react-native-mmkv"
   },
   "author": "Marc Rousavy <me@mrousavy.com> (https://github.com/mrousavy)",
   "license": "MIT",
@@ -102,19 +93,6 @@
     "node_modules/",
     "lib/"
   ],
-  "release-it": {
-    "npm": {
-      "publish": true
-    },
-    "git": false,
-    "github": {
-      "release": false
-    },
-    "hooks": {
-      "before:init": "bun typecheck",
-      "after:bump": "bun run build"
-    }
-  },
   "prettier": {
     "quoteProps": "consistent",
     "singleQuote": true,
@@ -125,18 +103,22 @@
   },
   "imports": {
     "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs",
-    "#react-native-mmkv": {
-      "types": "./lib/MMKV.native.d.ts",
-      "react-native-mmkv-mock": "./lib/MMKV.mock.js",
-      "browser": "./lib/MMKV.web.js",
-      "react-native": "./lib/MMKV.native.js",
-      "default": "./lib/MMKV.web.js"
+    "#initialize": {
+      "types": "./lib/initialize.native.d.ts",
+      "react-native-mmkv-mock": "./lib/initialize.js",
+      "browser": "./lib/initialize.js",
+      "react-native": "./lib/initialize.native.js",
+      "default": "./lib/initialize.js"
     }
   },
   "swiftpmConfig": {
-    "name": "NitroMmkv",
+    "name": "ReactNativeMmkv",
     "dependencies": [
+      "nitro-mmkv",
       "react-native-nitro-modules"
     ]
+  },
+  "dependencies": {
+    "nitro-mmkv": "4.3.2"
   }
 }

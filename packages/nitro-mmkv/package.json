@@ -1,0 +1,124 @@
+{
+  "name": "nitro-mmkv",
+  "version": "4.3.2",
+  "description": "MMKV storage for Nitro runtimes.",
+  "main": "lib/index",
+  "module": "lib/index",
+  "types": "lib/index.d.ts",
+  "react-native": "lib/index",
+  "source": "src/index",
+  "files": [
+    "lib",
+    "src",
+    "cpp",
+    "apple",
+    "android/*.cmake",
+    "android/build.gradle",
+    "nitrogen",
+    "nitro.json",
+    "Package.swift",
+    "react-native.config.js"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf android/build node_modules/**/android/build lib",
+    "lint": "eslint \"**/*.{js,ts,tsx}\" --fix && prettier --write \"**/*.{js,ts,tsx}\"",
+    "lint-ci": "eslint \"**/*.{js,ts,tsx}\" --max-warnings=0 -f @jamesacarr/github-actions && prettier --check \"**/*.{js,ts,tsx}\"",
+    "typescript": "tsc",
+    "specs": "nitrogen --logLevel=\"debug\" && tsc",
+    "build": "tsc --noEmit false",
+    "test": "jest"
+  },
+  "keywords": [
+    "react-native",
+    "nitro"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/margelo/react-native-mmkv.git",
+    "directory": "packages/nitro-mmkv"
+  },
+  "author": "Marc Rousavy <me@mrousavy.com> (https://github.com/mrousavy)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/margelo/react-native-mmkv/issues"
+  },
+  "homepage": "https://github.com/margelo/react-native-mmkv#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "@react-native/eslint-config": "0.88.1",
+    "@types/react": "^19.2.15",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^10.1.8",
+    "nitrogen": "1.0.0-alpha.nightly.137.gd4793c40b8b8",
+    "prettier": "^3.8.3",
+    "react": "19.3.0",
+    "typescript": "^6.0.3",
+    "nitro-core": "1.0.0-alpha.nightly.137.gd4793c40b8b8"
+  },
+  "peerDependencies": {
+    "nitro-core": ">=1.0.0-alpha.nightly.137 <1.0.0-alpha.nightly.139",
+    "react": "*"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@react-native",
+      "prettier"
+    ]
+  },
+  "eslintIgnore": [
+    "node_modules/",
+    "lib/"
+  ],
+  "prettier": {
+    "quoteProps": "consistent",
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5",
+    "useTabs": false,
+    "semi": false
+  },
+  "imports": {
+    "#nitro/*": "./nitrogen/generated/shared/javascript/*.cjs",
+    "#mmkv": {
+      "types": "./lib/MMKV.native.d.ts",
+      "react-native-mmkv-mock": "./lib/MMKV.mock.js",
+      "browser": "./lib/MMKV.web.js",
+      "react-native": "./lib/MMKV.native.js",
+      "node": "./lib/MMKV.web.js",
+      "default": "./lib/MMKV.native.js"
+    }
+  },
+  "swiftpmConfig": {
+    "name": "NitroMmkv",
+    "dependencies": [
+      "react-native-nitro-modules"
+    ]
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./native": {
+      "types": "./lib/native.d.ts",
+      "default": "./lib/native.js"
+    },
+    "./package.json": "./package.json",
+    "./react": {
+      "types": "./lib/react.d.ts",
+      "default": "./lib/react.js"
+    }
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "nitro-core": {
+      "optional": true
+    }
+  }
+}

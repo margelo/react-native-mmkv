@@ -66,19 +66,5 @@ jobs:
       - name: Install npm dependencies (bun)
         run: bun install
 
-      - name: Run ESLint CI in example/
-        working-directory: example
+      - name: Check packages and examples
         run: bun lint-ci
-      - name: Run ESLint CI in packages/react-native-mmkv
-        working-directory: packages/react-native-mmkv
-        run: bun lint-ci
-
-      - name: Run ESLint with auto-fix in example/
-        working-directory: example
-        run: bun lint
-      - name: Run ESLint with auto-fix in packages/react-native-mmkv
-        working-directory: packages/react-native-mmkv
-        run: bun lint
-
-      - name: Verify no files have changed after auto-fix
-        run: git diff --exit-code HEAD -- . ':(exclude)bun.lock'

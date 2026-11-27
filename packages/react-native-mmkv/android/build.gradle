@@ -20,7 +20,13 @@ def isNewArchitectureEnabled() {
 
 apply plugin: "com.android.library"
 apply plugin: 'org.jetbrains.kotlin.android'
-apply from: '../nitrogen/generated/android/NitroMmkv+autolinking.gradle'
+def coreManifest = providers.exec {
+  workingDir projectDir
+  commandLine "node", "-p", "require.resolve('nitro-mmkv/package.json')"
+}.standardOutput.asText.get().trim()
+def coreDirectory = file(coreManifest).parentFile
+apply from: new File(coreDirectory, "android/build.gradle")
+apply from: '../nitrogen/generated/android/MmkvHost+autolinking.gradle'
 apply from: "./fix-prefab.gradle"
 
 if (isNewArchitectureEnabled()) {
@@ -48,6 +54,7 @@ android {
 
     externalNativeBuild {
       cmake {
+        arguments "-DMMKV_CORE_DIR=${coreDirectory.absolutePath}"
         cppFlags "-frtti -fexceptions -Wall -Wextra -fstack-protector-all"
         def mmkvLogLevel = rootProject.hasProperty("MMKV_logLevel") ? rootProject.property("MMKV_logLevel") : null
         if (mmkvLogLevel != null && mmkvLogLevel != "") {
@@ -144,6 +151,4 @@ dependencies {
   // Add a dependency on NitroModules
   implementation project(":react-native-nitro-modules")
 
-  // Add a dependency on mmkv core (this ships a C++ prefab)
-  implementation "io.github.zhongwuzw:mmkv:2.4.2"
 }

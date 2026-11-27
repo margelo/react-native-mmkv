@@ -5,21 +5,23 @@
   "repository": "https://github.com/margelo/react-native-mmkv.git",
   "author": "Marc Rousavy <me@mrousavy.com> (https://github.com/mrousavy)",
   "workspaces": [
-    "packages/react-native-mmkv",
-    "example"
+    "packages/*",
+    "example",
+    "example-react-nitro"
   ],
   "scripts": {
-    "postinstall": "bun mmkv build",
+    "postinstall": "bun run build",
     "bootstrap": "bun install && bun example spm",
     "typecheck": "bun --filter=\"**\" typecheck",
     "lint": "bun --filter=\"**\" lint",
     "lint-ci": "bun --filter=\"**\" lint-ci",
     "lint-cpp": "./scripts/clang-format.sh",
-    "release": "./scripts/release.sh",
-    "specs": "bun mmkv specs",
+    "release": "release-it",
+    "specs": "bun --filter=\"./packages/*\" run specs",
     "mmkv": "bun --cwd packages/react-native-mmkv",
     "example": "bun --cwd example",
-    "test": "jest"
+    "test": "jest",
+    "build": "bun --filter=\"./packages/*\" run build"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.29.7",
@@ -44,8 +46,8 @@
       "release": true
     },
     "hooks": {
-      "before:release": "bun i && bun mmkv build",
-      "before:git": "bun i && git add bun.lock"
+      "after:bump": "bun install && git add bun.lock",
+      "before:release": "bash ./scripts/release.sh"
     },
     "plugins": {
       "@release-it/bumper": {
@@ -53,6 +55,17 @@
           {
             "file": "example/package.json",
             "path": "version"
+          },
+          {
+            "file": "packages/nitro-mmkv/package.json",
+            "path": "version"
+          },
+          {
+            "file": "packages/react-*/package.json",
+            "path": [
+              "version",
+              "dependencies.nitro-mmkv"
+            ]
           }
         ]
       },

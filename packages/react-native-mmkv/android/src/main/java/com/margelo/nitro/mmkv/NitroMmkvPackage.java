@@ -10,7 +10,6 @@ import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.BaseReactPackage;
 
 import java.util.HashMap;
-import java.util.function.Supplier;
 
 public class NitroMmkvPackage extends BaseReactPackage {
   @Nullable
@@ -27,6 +26,6 @@ public class NitroMmkvPackage extends BaseReactPackage {
   }
 
   static {
-    NitroMmkvOnLoad.initializeNative();
+    System.loadLibrary("MmkvHost");
   }
 }

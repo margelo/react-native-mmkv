@@ -14,7 +14,9 @@ on:
     paths:
       - ".github/workflows/harness-web.yml"
       - "packages/react-native-mmkv/src/**"
+      - "packages/nitro-mmkv/src/**"
       - "packages/react-native-mmkv/lib/**"
+      - "packages/nitro-mmkv/lib/**"
       - "**/bun.lock"
       - "**/react-native.config.js"
       - "**/nitro.json"
@@ -29,7 +31,9 @@ on:
     paths:
       - ".github/workflows/harness-web.yml"
       - "packages/react-native-mmkv/src/**"
+      - "packages/nitro-mmkv/src/**"
       - "packages/react-native-mmkv/lib/**"
+      - "packages/nitro-mmkv/lib/**"
       - "**/bun.lock"
       - "**/react-native.config.js"
       - "**/nitro.json"

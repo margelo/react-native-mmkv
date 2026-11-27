@@ -28,7 +28,8 @@ jobs:
       matrix:
         path:
         - 'packages/react-native-mmkv/android/src/main/cpp'
-        - 'packages/react-native-mmkv/cpp'
+        - 'packages/nitro-mmkv/cpp'
+        - 'packages/nitro-mmkv/apple'
         - 'packages/react-native-mmkv/apple'
     steps:
       - uses: actions/checkout@v7

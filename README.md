@@ -76,6 +76,17 @@ npx react-native spm
 
 Native builds require React Native 0.88 or newer with the New Architecture. iOS builds use Swift Package Manager and Swift 6.4 or newer.
 
+### React Nitro
+
+Install the adapter and the shared native module as direct app dependencies. React Nitro discovers both during preparation.
+
+```sh
+bun add react-nitro-mmkv nitro-mmkv
+bun run react-nitro prepare
+```
+
+Import `MMKV` and the hooks from `react-nitro-mmkv`. The [React Nitro example](./example-react-nitro) builds with SwiftPM on iOS and Gradle on Android.
+
 ## Usage
 
 ### Create a new instance

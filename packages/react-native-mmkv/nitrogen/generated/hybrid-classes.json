@@ -1,34 +1,12 @@
 {
   "version": 2,
   "classes": {
-    "MMKV": {
+    "MMKVDirectory": {
       "android": {
         "implementation": {
-          "className": "HybridMMKV",
-          "include": "\"HybridMMKV.hpp\""
-        },
-        "language": "c++"
-      },
-      "apple": {
-        "implementation": {
-          "className": "HybridMMKV",
-          "include": "\"HybridMMKV.hpp\""
-        },
-        "language": "c++"
-      }
-    },
-    "MMKVPlatformContext": {
-      "android": {
-        "implementation": {
-          "className": "HybridMMKVPlatformContext"
+          "className": "HybridMMKVDirectory"
         },
         "language": "kotlin"
-      },
-      "apple": {
-        "implementation": {
-          "className": "HybridMMKVPlatformContext"
-        },
-        "language": "swift"
       }
     }
   }

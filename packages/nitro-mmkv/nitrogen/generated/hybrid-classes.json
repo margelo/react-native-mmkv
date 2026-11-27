@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "classes": {
+    "MMKV": {
+      "android": {
+        "implementation": {
+          "className": "HybridMMKV",
+          "include": "\"HybridMMKV.hpp\""
+        },
+        "language": "c++"
+      },
+      "apple": {
+        "implementation": {
+          "className": "HybridMMKV",
+          "include": "\"HybridMMKV.hpp\""
+        },
+        "language": "c++"
+      }
+    }
+  }
+}

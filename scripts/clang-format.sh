@@ -5,7 +5,8 @@ set -e
 CPP_DIRS=(
   # react-native-mmkv
   "packages/react-native-mmkv/android/src/main/cpp"
-  "packages/react-native-mmkv/cpp"
+  "packages/nitro-mmkv/cpp"
+  "packages/nitro-mmkv/apple"
   "packages/react-native-mmkv/apple"
 )
 

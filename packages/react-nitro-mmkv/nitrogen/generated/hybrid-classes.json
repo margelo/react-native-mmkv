@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "classes": {
+    "MMKVDirectory": {
+      "android": {
+        "implementation": {
+          "className": "HybridMMKVDirectory"
+        },
+        "language": "kotlin"
+      }
+    }
+  }
+}

@@ -1,13 +1,13 @@
 {
   "$schema": "https://nitro.margelo.com/nitro.schema.json",
   "cxxNamespace": [
-    "mmkv"
+    "mmkvhost"
   ],
   "android": {
     "namespace": [
-      "mmkv"
+      "mmkvhost"
     ],
-    "cxxLibName": "NitroMmkv"
+    "cxxLibName": "MmkvHost"
   },
   "ignorePaths": [
     "**/node_modules"
@@ -15,6 +15,6 @@
   "gitAttributesGeneratedFlag": false,
   "environment": "react-native",
   "apple": {
-    "moduleName": "NitroMmkv"
+    "moduleName": "MmkvHost"
   }
 }

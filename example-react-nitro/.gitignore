@@ -1,0 +1,7 @@
+.nitro/
+.gradle/
+.cxx/
+local.properties
+xcuserdata/
+project.xcworkspace/
+.kotlin/

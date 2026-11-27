@@ -1,0 +1,24 @@
+{
+  "name": "mmkv-react-nitro-example",
+  "private": true,
+  "scripts": {
+    "prepare:native": "react-nitro prepare",
+    "ios": "react-nitro ios",
+    "android": "react-nitro android",
+    "test:harness": "react-nitro test",
+    "start": "react-nitro start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "nitro-mmkv": "workspace:*",
+    "react-nitro-mmkv": "workspace:*",
+    "react-nitro-cli": "0.0.1-alpha.17",
+    "react-nitro-renderer": "0.0.1-alpha.17",
+    "react": "19.3.0"
+  },
+  "devDependencies": {
+    "react-nitro-harness": "0.0.1-alpha.17",
+    "@types/react": "^19.2.15",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,16 +1,7 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
-echo "Starting the release process..."
-echo "Provided options: $@"
-
-echo "Publishing 'react-native-mmkv' to NPM"
-cd packages/react-native-mmkv
-bun release $@
-
-echo "Creating a Git bump commit and GitHub release"
-cd ../..
-bun run release-it $@
-
-echo "Successfully released react-native-mmkv!"
+for package in nitro-mmkv react-native-mmkv react-nitro-mmkv; do
+  (cd "packages/$package" && npm publish)
+done

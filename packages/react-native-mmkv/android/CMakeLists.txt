@@ -1,47 +1,25 @@
-project(NitroMmkv)
-cmake_minimum_required(VERSION 3.9.0)
+cmake_minimum_required(VERSION 3.13)
+project(MmkvHost)
 
-set (PACKAGE_NAME NitroMmkv)
-set (CMAKE_VERBOSE_MAKEFILE ON)
-set (CMAKE_CXX_STANDARD 20)
-
-# Optionally configure MMKV log level (passed from Gradle as -DMMKV_LOG_LEVEL=<0-4>)
+set(generated "${MMKV_CORE_DIR}/nitrogen/generated")
+file(GLOB core_sources CONFIGURE_DEPENDS
+  "${MMKV_CORE_DIR}/cpp/*.cpp"
+  "${generated}/shared/c++/*.cpp"
+  "${generated}/android/c++/*.cpp"
+)
+add_library(MmkvHost SHARED
+  src/main/cpp/cpp-adapter.cpp
+  ${core_sources}
+  "${generated}/android/NitroMmkvOnLoad.cpp"
+)
+include(../nitrogen/generated/android/MmkvHost+autolinking.cmake)
+target_include_directories(MmkvHost PRIVATE
+  "${MMKV_CORE_DIR}/cpp"
+  "${generated}/shared/c++/include"
+  "${generated}/android/include"
+)
 if(DEFINED MMKV_LOG_LEVEL)
-  add_definitions(-DMMKV_LOG_LEVEL=${MMKV_LOG_LEVEL})
+  target_compile_definitions(MmkvHost PRIVATE MMKV_LOG_LEVEL=${MMKV_LOG_LEVEL})
 endif()
-
-# Find all C++ files (shared and platform specifics)
-file(GLOB_RECURSE shared_files RELATIVE ${CMAKE_SOURCE_DIR}
-     "../cpp/**.cpp"
-)
-file(GLOB_RECURSE android_files RELATIVE ${CMAKE_SOURCE_DIR}
-     "src/main/cpp/**.cpp"
-)
-
-# Define C++ library and add all sources
-add_library(${PACKAGE_NAME} SHARED
-            ${shared_files}
-            ${android_files}
-)
-
-# Find MMKV prefab package (from mmkv-shared gradle dependency)
 find_package(mmkv REQUIRED CONFIG)
-
-# Add Nitrogen specs :)
-include(${CMAKE_SOURCE_DIR}/../nitrogen/generated/android/NitroMmkv+autolinking.cmake)
-
-# Set up local includes
-include_directories(
-        "src/main/cpp"
-        "../cpp"
-)
-
-find_library(LOG_LIB log)
-
-# Link all libraries together
-target_link_libraries(
-        ${PACKAGE_NAME}
-        ${LOG_LIB}
-        mmkv::mmkv                  # <-- MMKV core
-        android                     # <-- Android core
-)
+target_link_libraries(MmkvHost mmkv::mmkv android log)
