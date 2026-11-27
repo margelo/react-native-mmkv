@@ -36,8 +36,10 @@ public:
   static void notifyOnValueChanged(const std::string& mmkvID, const std::string& key);
 
 private:
+  static std::unordered_map<MMKVID, std::vector<ListenerSubscription>>& listenersByID();
+
+private:
   static std::atomic<ListenerID> _listenersCounter;
-  static std::unordered_map<MMKVID, std::vector<ListenerSubscription>> _listeners;
 };
 
 } // namespace margelo::nitro::mmkv
