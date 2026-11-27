@@ -17,8 +17,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf android/build node_modules/**/android/build lib",
-    "lint": "eslint \"**/*.{js,ts,tsx}\" --fix && prettier --write \"**/*.{js,ts,tsx}\"",
-    "lint-ci": "eslint \"**/*.{js,ts,tsx}\" --max-warnings=0 -f @jamesacarr/github-actions && prettier --check \"**/*.{js,ts,tsx}\"",
+    "lint": "eslint \"{*.js,src/**/*.{ts,tsx}}\" --fix && prettier --write \"{*.js,src/**/*.{ts,tsx}}\"",
+    "lint-ci": "eslint \"{*.js,src/**/*.{ts,tsx}}\" --max-warnings=0 -f @jamesacarr/github-actions && prettier --check \"{*.js,src/**/*.{ts,tsx}}\"",
     "typescript": "tsc",
     "specs": "nitrogen --logLevel=\"debug\" && tsc",
     "build": "tsc --noEmit false",
