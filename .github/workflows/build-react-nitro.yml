@@ -22,6 +22,14 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun ios --build-only
         working-directory: example-react-nitro
+      - uses: futureware-tech/simulator-action@v5
+        with:
+          model: iPhone 18 Pro
+          os: iOS
+          os_version: '27.2'
+          wait_for_boot: true
+      - run: bun test:harness --platform ios --skip-build
+        working-directory: example-react-nitro
 
   android:
     # React Nitro ships its host Hermes compiler for Apple Silicon.

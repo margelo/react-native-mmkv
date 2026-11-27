@@ -12,6 +12,7 @@
 .cache
 build
 compile_commands.json
+packages/*/lib/
 
 **/tsconfig.tsbuildinfo
 
